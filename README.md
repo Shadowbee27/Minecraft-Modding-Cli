@@ -1,2 +1,1 @@
-# Minecraft-Mod-Cli
-
+# Minecraft-Modding-Cli (McMC)

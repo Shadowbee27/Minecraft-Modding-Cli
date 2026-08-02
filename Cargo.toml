@@ -1,0 +1,16 @@
+[package]
+name = "mcmc"
+authors = ["Shadowbee"]
+license = "AGPL-3.0-only"
+repository = "https://codeberg.org/shadowbee/Minecraft-Mod-Cli"
+description = "A clitool to manage minecraft mods for servers"
+readme = "README.md"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.5", features = ["derive"] }
+reqwest = "0.13.4"
+serde =  "1.0.229"
+toml = "1.1.4+spec-1.1.0"
+anyhow = "1.0.104"
