@@ -1,11 +1,17 @@
 use super::SeverSoftware;
+use crate::config::ProjectConfig;
+use semver::Version;
+use serde::{Deserialize, Serialize};
 
 const FABRIC_URL: &str = "";
 
-pub struct Fabric {}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Fabric {
+  pub flavor_version: Version,
+}
 
 impl SeverSoftware for Fabric {
-  fn install(&self) -> Result<(), super::SoftwareInstallError> {
+  fn install(&self, pconf: ProjectConfig) -> Result<(), super::SoftwareInstallError> {
     unimplemented!()
   }
 

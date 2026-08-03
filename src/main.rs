@@ -3,7 +3,7 @@ use std::process::exit;
 
 use clap::*;
 
-pub mod dialogs;
+pub mod tui;
 use crate::command::{init, new};
 pub mod command;
 pub mod config;

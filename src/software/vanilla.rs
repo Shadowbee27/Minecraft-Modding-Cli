@@ -1,11 +1,17 @@
 use super::SeverSoftware;
+use crate::config::ProjectConfig;
+use semver::Version;
+use serde::{Deserialize, Serialize};
 
 const VANILLA_URL: &str = "";
 
-pub struct Vanilla {}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Vanilla {
+  pub flavor_version: Version,
+}
 
 impl SeverSoftware for Vanilla {
-  fn install(&self) -> Result<(), super::SoftwareInstallError> {
+  fn install(&self, pconf: ProjectConfig) -> Result<(), super::SoftwareInstallError> {
     unimplemented!()
   }
 
