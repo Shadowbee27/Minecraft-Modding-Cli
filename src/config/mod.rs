@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::Path};
 
 use super::software::{McVersion, ServerSoftware};
 use semver::{BuildMetadata, Prerelease, Version};
@@ -22,7 +22,7 @@ pub struct ProjectConfig {
 }
 
 impl ProjectConfig {
-  pub fn write_to_file(self, project_dir: &PathBuf) -> anyhow::Result<ProjectConfig> {
+  pub fn write_to_file(self, project_dir: &Path) -> anyhow::Result<ProjectConfig> {
     let serialized = toml::to_string(&self)?;
 
     fs::write(project_dir.join(CONFIG_PATH), serialized)?;

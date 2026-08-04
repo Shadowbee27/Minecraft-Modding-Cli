@@ -41,18 +41,17 @@ pub fn create_new_server(args: CreateNewArgs) {
     },
   ];
 
-  if modding_folder.is_some() {
-    if modding_folder.unwrap() == "mods" {
-      dirs_to_create.push(ServerDir {
-        dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
-        creation_error: "Failed to create mods directory:",
-      });
-    } else if modding_folder.unwrap() == "plugins" {
-      dirs_to_create.push(ServerDir {
-        dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
-        creation_error: "Failed to create plugins directory:",
-      });
-    }
+  if let Some("mods/") = modding_folder {
+    dirs_to_create.push(ServerDir {
+      dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
+      creation_error: "Failed to create mods directory:",
+    });
+  }
+  if let Some("plugins/") = modding_folder {
+    dirs_to_create.push(ServerDir {
+      dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
+      creation_error: "Failed to create plugins directory:",
+    });
   }
 
   for dir in dirs_to_create {
@@ -78,7 +77,7 @@ pub fn create_new_server(args: CreateNewArgs) {
   };
 
   // Todo: Error handling, but it is blocked by the reason that it is not know which errors need to be handled
-  let install_error = match server_software {
+  let _ = match server_software {
     ServerSoftware::FABRIC(f) => f.install(project_config),
     ServerSoftware::FOLIA(f) => f.install(project_config),
     ServerSoftware::FORGE(f) => f.install(project_config),

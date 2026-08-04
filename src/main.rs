@@ -62,5 +62,5 @@ fn load_config() -> ProjectConfig {
     }
   };
 
-  return toml_config;
+  toml_config
 }

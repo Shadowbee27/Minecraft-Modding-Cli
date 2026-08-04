@@ -1,6 +1,5 @@
 use crate::config::ProjectConfig;
 
-use super::McVersion;
 use super::SeverSoftware;
 use semver::Version;
 use serde::{Deserialize, Serialize};
