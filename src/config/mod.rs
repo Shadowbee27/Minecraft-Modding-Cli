@@ -25,7 +25,7 @@ impl ProjectConfig {
   pub fn write_to_file(self, project_dir: &PathBuf) -> anyhow::Result<ProjectConfig> {
     let serialized = toml::to_string(&self)?;
 
-    fs::write(CONFIG_PATH, serialized)?;
+    fs::write(project_dir.join(CONFIG_PATH), serialized)?;
     Ok(self)
   }
 }
