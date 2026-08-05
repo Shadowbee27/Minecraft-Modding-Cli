@@ -1,8 +1,8 @@
-use crate::config::ProjectConfig;
-
 use super::SeverSoftware;
+use crate::config::ProjectConfig;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 const FOLIA_URL: &str = "";
 
@@ -12,11 +12,11 @@ pub struct Folia {
 }
 
 impl SeverSoftware for Folia {
-  fn install(&self, pconf: ProjectConfig) -> Result<(), super::SoftwareInstallError> {
+  fn install(&self, pconf: ProjectConfig, pdir: &Path) {
     unimplemented!()
   }
 
-  fn update(&self) -> Result<(), super::SoftwareUpdateError> {
+  fn update(&self) {
     unimplemented!()
   }
 }

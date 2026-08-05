@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
@@ -26,14 +28,14 @@ pub enum ServerSoftware {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct McVersion(Version);
+pub struct McVersion(pub Version);
 
-pub enum SoftwareUpdateError {}
-pub enum SoftwareInstallError {}
+// pub struct SoftwareUpdateError {}
+// pub struct SoftwareInstallError {}
 
 pub trait SeverSoftware {
-  fn update(&self) -> Result<(), SoftwareUpdateError>;
-  fn install(&self, pconf: ProjectConfig) -> Result<(), SoftwareInstallError>;
+  fn update(&self);
+  fn install(&self, pconf: ProjectConfig, pdir: &Path);
 }
 
 impl ServerSoftware {

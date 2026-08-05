@@ -2,6 +2,7 @@ use super::SeverSoftware;
 use crate::config::ProjectConfig;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 const FORGE_URL: &str = "";
 
@@ -11,11 +12,11 @@ pub struct Forge {
 }
 
 impl SeverSoftware for Forge {
-  fn install(&self, pconf: ProjectConfig) -> Result<(), super::SoftwareInstallError> {
+  fn install(&self, pconf: ProjectConfig, pdir: &Path) {
     unimplemented!()
   }
 
-  fn update(&self) -> Result<(), super::SoftwareUpdateError> {
+  fn update(&self) {
     unimplemented!()
   }
 }

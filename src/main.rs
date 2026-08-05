@@ -1,7 +1,6 @@
+use clap::*;
 use std::fs::{exists, read_to_string};
 use std::process::exit;
-
-use clap::*;
 
 pub mod tui;
 use crate::command::{init, new};
@@ -9,6 +8,7 @@ pub mod command;
 pub mod config;
 pub mod software;
 use crate::config::{CONFIG_PATH, ProjectConfig};
+pub mod common;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]

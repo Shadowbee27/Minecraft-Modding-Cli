@@ -25,10 +25,25 @@ pub fn create_new_server(args: CreateNewArgs) {
     exit(1);
   }
 
-  let mut project_config: ProjectConfig;
-
   let server_software: ServerSoftware = server_software_selector();
+  // let server_software: ServerSoftware = ServerSoftware::FABRIC(Fabric {
+  //   flavor_version: Version {
+  //     major: 0,
+  //     minor: 19,
+  //     patch: 3,
+  //     pre: Prerelease::EMPTY,
+  //     build: BuildMetadata::EMPTY,
+  //   },
+  //   loader_version: Version {
+  //     major: 1,
+  //     minor: 1,
+  //     patch: 2,
+  //     pre: Prerelease::EMPTY,
+  //     build: BuildMetadata::EMPTY,
+  //   },
+  // });
   let modding_folder = server_software.get_moddification_dir();
+  // let modding_folder = Some("mods/");
 
   let mut dirs_to_create: Vec<ServerDir> = vec![
     ServerDir {
@@ -61,29 +76,35 @@ pub fn create_new_server(args: CreateNewArgs) {
     }
   }
   let minecraft_version = mc_version_select();
-  project_config = ProjectConfig {
+  // let minecraft_version = McVersion(Version {
+  //   major: 26,
+  //   minor: 1,
+  //   patch: 1,
+  //   pre: Prerelease::EMPTY,
+  //   build: BuildMetadata::EMPTY,
+  // });
+  let project_config = ProjectConfig {
     config_version: CONFIG_VERSION,
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
     mc_version: minecraft_version.clone(),
   };
 
-  project_config = match project_config.write_to_file(&args.name) {
-    Ok(conf) => conf,
+  match project_config.write_to_file(&args.name) {
+    Ok(_) => {}
     Err(e) => {
       eprintln!("Error while saving config file: ({e})");
       exit(1)
     }
   };
 
-  // Todo: Error handling, but it is blocked by the reason that it is not know which errors need to be handled
-  let _ = match server_software {
-    ServerSoftware::FABRIC(f) => f.install(project_config),
-    ServerSoftware::FOLIA(f) => f.install(project_config),
-    ServerSoftware::FORGE(f) => f.install(project_config),
-    ServerSoftware::NEOFORGE(n) => n.install(project_config),
-    ServerSoftware::PAPER(p) => p.install(project_config),
-    ServerSoftware::VANILLA(v) => v.install(project_config),
+  match server_software {
+    ServerSoftware::FABRIC(f) => f.install(project_config, &args.name),
+    ServerSoftware::FOLIA(f) => f.install(project_config, &args.name),
+    ServerSoftware::FORGE(f) => f.install(project_config, &args.name),
+    ServerSoftware::NEOFORGE(n) => n.install(project_config, &args.name),
+    ServerSoftware::PAPER(p) => p.install(project_config, &args.name),
+    ServerSoftware::VANILLA(v) => v.install(project_config, &args.name),
   };
 
   println!("Success, new server created");
