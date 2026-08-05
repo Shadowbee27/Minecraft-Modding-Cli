@@ -18,6 +18,7 @@ pub async fn download_file(client: &Client, url: &str, path: &str) -> anyhow::Re
   let total_size = res.content_length();
 
   if total_size.is_some() {
+    #[allow(clippy::unnecessary_unwrap)]
     let total_size = total_size.unwrap();
     // Indicatif setup
     let pb = ProgressBar::new(total_size);

@@ -91,7 +91,7 @@ pub fn create_new_server(args: CreateNewArgs) {
     jar_file: String::new(),
   };
 
-  match project_config.write_to_file(&args.name) {
+  match project_config.save(&args.name) {
     Ok(_) => {}
     Err(e) => {
       eprintln!("Error while saving config file: ({e})");

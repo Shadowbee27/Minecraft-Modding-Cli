@@ -9,8 +9,33 @@ use serde::{Deserialize, Serialize};
 use tokio::runtime::Runtime;
 
 const FABRIC_URL: &str = "https://meta.fabricmc.net";
-const FABRIC_INFO_URL: &str = "/v2/versions/loader";
+const FABRIC_INFO_URL: &str = "/v2/versions";
 const FABRIC_DOWNLOAD_URL: &str = "/v2/versions/loader/";
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FabricInfo {
+  #[serde(rename(deserialize = "installer"))]
+  pub installer_version: Vec<FabricInstallerVersion>,
+  #[serde(rename(deserialize = "loader"))]
+  pub loader_version: Vec<FabricLoaderVersion>,
+  #[serde(rename(deserialize = "game"))]
+  pub game_version: Vec<FabricGameVersion>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FabricInstallerVersion {
+  pub version: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FabricLoaderVersion {
+  pub version: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FabricGameVersion {
+  pub version: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fabric {
@@ -26,26 +51,33 @@ impl SeverSoftware for Fabric {
       "{}{}{}/{}/{}/server/jar",
       FABRIC_URL,
       FABRIC_DOWNLOAD_URL,
-      &pconf.mc_version.0.to_string(),
-      &pconf.flavor_version.to_string(),
-      &self.loader_version.to_string()
+      pconf.mc_version.0,
+      pconf.flavor_version,
+      self.loader_version
     );
 
     let file_path = format!(
       "fabric-server-mc{}-fabric{}.jar",
-      &pconf.mc_version.0.to_string(),
-      &pconf.flavor_version.to_string()
+      pconf.mc_version.0, pconf.flavor_version
     );
 
     let rt = Runtime::new().unwrap();
 
     let result = rt.block_on(download_file(
       &client,
-      &format!("{}/{}", pdir.to_str().unwrap(), &download_url),
+      &format!("{}/{}", pdir.to_str().unwrap(), download_url),
       &file_path,
     ));
 
     pconf.jar_file = file_path;
+
+    match pconf.save(pdir) {
+      Ok(_) => {}
+      Err(e) => {
+        eprintln!("Error while saving config file: ({e})");
+        exit(1)
+      }
+    }
 
     match result {
       Ok(_) => {}
@@ -58,5 +90,30 @@ impl SeverSoftware for Fabric {
 
   fn update(&self) {
     unimplemented!()
+  }
+}
+
+pub async fn get_fabric_info() -> anyhow::Result<FabricInfo> {
+  let client = Client::new();
+
+  let response = client
+    .get(format!("{}{}", FABRIC_URL, FABRIC_INFO_URL))
+    .send()
+    .await?
+    .json::<FabricInfo>()
+    .await?;
+
+  Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn fabric_info_test() {
+    let rt = Runtime::new().unwrap();
+    let result = rt.block_on(get_fabric_info());
+    dbg!(result).unwrap();
   }
 }

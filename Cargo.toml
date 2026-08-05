@@ -23,5 +23,4 @@ futures-util = "0.3.33"
 error-chain = "0.12.4"
 ftp = "3.0.1"
 futures = "0.3.33"
-reqwest = { version = "0.13.4", features = ["blocking", "stream"] }
-#ftp = { version = "<version>", features = ["secure"] }
+reqwest = { version = "0.13.4", features = ["blocking", "stream", "json"] }
