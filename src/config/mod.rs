@@ -19,6 +19,7 @@ pub struct ProjectConfig {
   pub flavor: ServerSoftware,
   pub flavor_version: Version,
   pub mc_version: McVersion,
+  pub jar_file: String,
 }
 
 impl ProjectConfig {

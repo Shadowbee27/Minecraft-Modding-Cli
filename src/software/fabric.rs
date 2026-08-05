@@ -19,7 +19,7 @@ pub struct Fabric {
 }
 
 impl SeverSoftware for Fabric {
-  fn install(&self, pconf: ProjectConfig, pdir: &Path) {
+  fn install(&self, mut pconf: ProjectConfig, pdir: &Path) {
     let client = Client::new();
     // BSP: https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.3/0.8.0/server/jar
     let download_url = format!(
@@ -32,15 +32,20 @@ impl SeverSoftware for Fabric {
     );
 
     let file_path = format!(
-      "{}/fabric-server-mc{}-fabric{}.jar",
-      pdir.to_str().unwrap(),
+      "fabric-server-mc{}-fabric{}.jar",
       &pconf.mc_version.0.to_string(),
       &pconf.flavor_version.to_string()
     );
 
     let rt = Runtime::new().unwrap();
 
-    let result = rt.block_on(download_file(&client, &download_url, &file_path));
+    let result = rt.block_on(download_file(
+      &client,
+      &format!("{}/{}", pdir.to_str().unwrap(), &download_url),
+      &file_path,
+    ));
+
+    pconf.jar_file = file_path;
 
     match result {
       Ok(_) => {}

@@ -88,6 +88,7 @@ pub fn create_new_server(args: CreateNewArgs) {
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
     mc_version: minecraft_version.clone(),
+    jar_file: String::new(),
   };
 
   match project_config.write_to_file(&args.name) {
