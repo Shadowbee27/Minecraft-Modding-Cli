@@ -10,11 +10,13 @@ use crate::{
   },
 };
 
+pub mod bukkit;
 pub mod fabric;
 pub mod folia;
 pub mod forge;
 pub mod neoforge;
 pub mod paper;
+pub mod quilt;
 pub mod vanilla;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
