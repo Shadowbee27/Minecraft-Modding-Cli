@@ -1,9 +1,10 @@
 use clap::clap_derive::*;
+use colorful::{Color, Colorful};
 use std::fs::{create_dir_all, exists};
 use std::{path::PathBuf, process::exit};
 
 use crate::config::{CONFIG_VERSION, ProjectConfig};
-use crate::software::{ServerSoftware, SeverSoftware};
+use crate::software::ServerSoftware;
 use crate::tui::dialogs::minecraft::mc_version_select;
 use crate::tui::dialogs::software::server_software_selector;
 
@@ -26,24 +27,10 @@ pub fn create_new_server(args: CreateNewArgs) {
   }
 
   let server_software: ServerSoftware = server_software_selector();
-  // let server_software: ServerSoftware = ServerSoftware::FABRIC(Fabric {
-  //   flavor_version: Version {
-  //     major: 0,
-  //     minor: 19,
-  //     patch: 3,
-  //     pre: Prerelease::EMPTY,
-  //     build: BuildMetadata::EMPTY,
-  //   },
-  //   loader_version: Version {
-  //     major: 1,
-  //     minor: 1,
-  //     patch: 2,
-  //     pre: Prerelease::EMPTY,
-  //     build: BuildMetadata::EMPTY,
-  //   },
-  // });
+
   let modding_folder = server_software.get_moddification_dir();
-  // let modding_folder = Some("mods/");
+
+  let minecraft_version = mc_version_select(&server_software);
 
   let mut dirs_to_create: Vec<ServerDir> = vec![
     ServerDir {
@@ -72,17 +59,14 @@ pub fn create_new_server(args: CreateNewArgs) {
   for dir in dirs_to_create {
     match create_dir_all(dir.dir) {
       Ok(_) => {}
-      Err(e) => eprintln!("{} ({})", dir.creation_error, e),
+      Err(e) => eprintln!(
+        "{} ({})",
+        dir.creation_error,
+        e.to_string().color(Color::Red).bold()
+      ),
     }
   }
-  let minecraft_version = mc_version_select();
-  // let minecraft_version = McVersion(Version {
-  //   major: 26,
-  //   minor: 1,
-  //   patch: 1,
-  //   pre: Prerelease::EMPTY,
-  //   build: BuildMetadata::EMPTY,
-  // });
+
   let project_config = ProjectConfig {
     config_version: CONFIG_VERSION,
     flavor: server_software.clone(),
@@ -94,19 +78,15 @@ pub fn create_new_server(args: CreateNewArgs) {
   match project_config.save(&args.name) {
     Ok(_) => {}
     Err(e) => {
-      eprintln!("Error while saving config file: ({e})");
+      eprintln!(
+        "Error while saving config file: ({})",
+        e.to_string().color(Color::Red).bold()
+      );
       exit(1)
     }
   };
 
-  match server_software {
-    ServerSoftware::FABRIC(f) => f.install(project_config, &args.name),
-    ServerSoftware::FOLIA(f) => f.install(project_config, &args.name),
-    ServerSoftware::FORGE(f) => f.install(project_config, &args.name),
-    ServerSoftware::NEOFORGE(n) => n.install(project_config, &args.name),
-    ServerSoftware::PAPER(p) => p.install(project_config, &args.name),
-    ServerSoftware::VANILLA(v) => v.install(project_config, &args.name),
-  };
+  server_software.install(project_config, &args.name);
 
   println!("Success, new server created");
 }

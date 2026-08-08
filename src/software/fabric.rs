@@ -1,7 +1,9 @@
+use colorful::{Color, Colorful};
 use std::path::Path;
 use std::process::exit;
 
 use super::SeverSoftware;
+use super::SupportedVersion;
 use crate::{common::download::download_file, config::ProjectConfig};
 use reqwest::Client;
 use semver::Version;
@@ -19,7 +21,7 @@ pub struct FabricInfo {
   #[serde(rename(deserialize = "loader"))]
   pub loader_version: Vec<FabricLoaderVersion>,
   #[serde(rename(deserialize = "game"))]
-  pub game_version: Vec<FabricGameVersion>,
+  pub game_version: Vec<FabricGameVersions>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -33,14 +35,33 @@ pub struct FabricLoaderVersion {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct FabricGameVersion {
+pub struct FabricGameVersions {
   pub version: String,
+  pub stable: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fabric {
   pub flavor_version: Version,
   pub loader_version: Version,
+}
+
+impl FabricGameVersions {
+  pub fn to_supported_version(&self) -> SupportedVersion {
+    SupportedVersion {
+      version: self.version.clone(),
+      stable: self.stable,
+    }
+  }
+}
+
+impl Default for Fabric {
+  fn default() -> Self {
+    Fabric {
+      flavor_version: Version::new(0, 0, 0),
+      loader_version: Version::new(0, 0, 0),
+    }
+  }
 }
 
 impl SeverSoftware for Fabric {
@@ -74,7 +95,10 @@ impl SeverSoftware for Fabric {
     match pconf.save(pdir) {
       Ok(_) => {}
       Err(e) => {
-        eprintln!("Error while saving config file: ({e})");
+        eprintln!(
+          "Error while saving config file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
         exit(1)
       }
     }
@@ -82,7 +106,10 @@ impl SeverSoftware for Fabric {
     match result {
       Ok(_) => {}
       Err(e) => {
-        eprintln!("Error while downloading file: ({e})");
+        eprintln!(
+          "Error while downloading file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
         exit(1)
       }
     };
@@ -90,6 +117,25 @@ impl SeverSoftware for Fabric {
 
   fn update(&self) {
     unimplemented!()
+  }
+
+  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
+    let runtime = Runtime::new().unwrap();
+    let info = match runtime.block_on(get_fabric_info()) {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    info
+      .game_version
+      .iter()
+      .map(|v| v.to_supported_version())
+      .collect()
   }
 }
 

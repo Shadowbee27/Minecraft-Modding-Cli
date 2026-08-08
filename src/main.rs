@@ -1,4 +1,5 @@
 use clap::*;
+use colorful::{Color, Colorful};
 use std::fs::{exists, read_to_string};
 use std::process::exit;
 
@@ -36,7 +37,10 @@ fn load_config() -> ProjectConfig {
   let exists = match exists(CONFIG_PATH) {
     Ok(bool) => bool,
     Err(e) => {
-      eprintln!("Failed to check if config exists: ({e})!");
+      eprintln!(
+        "Failed to check if config exists: ({})!",
+        e.to_string().color(Color::Red).bold()
+      );
       exit(1)
     }
   };
@@ -49,7 +53,10 @@ fn load_config() -> ProjectConfig {
   let config = match read_to_string(CONFIG_PATH) {
     Ok(f) => f,
     Err(e) => {
-      eprintln!("Failed to read config: ({e})");
+      eprintln!(
+        "Failed to read config: ({})",
+        e.to_string().color(Color::Red).bold()
+      );
       exit(1)
     }
   };
@@ -57,7 +64,10 @@ fn load_config() -> ProjectConfig {
   let toml_config: ProjectConfig = match toml::from_str(&config) {
     Ok(c) => c,
     Err(e) => {
-      eprintln!("Parsing config failed: ({e})");
+      eprintln!(
+        "Parsing config failed:\n {}",
+        e.to_string().color(Color::Red).bold()
+      );
       exit(1)
     }
   };
