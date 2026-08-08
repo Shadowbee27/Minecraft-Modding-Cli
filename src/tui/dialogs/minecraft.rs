@@ -1,5 +1,5 @@
 use crate::software::{McVersion, ServerSoftware, SupportedVersion};
-use crate::tui::common::simple_prompt::{single_choice /* ,single_choice_fallback*/};
+use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
 use colorful::{Color, Colorful};
 use inquire::InquireError;
@@ -94,10 +94,10 @@ pub fn mc_version_select(software: &ServerSoftware) -> McVersion {
       },
     }
   }
-  unimplemented!("Fallback not implemented")
-  // McVersion(single_choice_fallback(
-  //   mc_versions,
-  //   "Which Minecraft version do you want to use?",
-  //   "Leave empty to cancel",
-  // ))
+
+  McVersion(single_choice_fallback(
+    mc_versions.iter().map(|v| v.version.clone()).collect(),
+    "Which Minecraft version do you want to use?",
+    "Leave empty to cancel",
+  ))
 }
