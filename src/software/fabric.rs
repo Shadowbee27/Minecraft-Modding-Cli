@@ -43,7 +43,7 @@ pub struct FabricGameVersions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fabric {
   pub flavor_version: Version,
-  pub loader_version: Version,
+  pub installer_version: Version,
 }
 
 impl FabricGameVersions {
@@ -58,8 +58,8 @@ impl FabricGameVersions {
 impl Default for Fabric {
   fn default() -> Self {
     Fabric {
-      flavor_version: Version::new(0, 0, 0),
-      loader_version: Version::new(0, 0, 0),
+      flavor_version: Version::new(0, 19, 3),
+      installer_version: Version::new(1, 1, 2),
     }
   }
 }
@@ -74,7 +74,7 @@ impl SeverSoftware for Fabric {
       FABRIC_DOWNLOAD_URL,
       pconf.mc_version.0,
       pconf.flavor_version,
-      self.loader_version
+      self.installer_version
     );
 
     let file_path = format!(
@@ -86,8 +86,8 @@ impl SeverSoftware for Fabric {
 
     let result = rt.block_on(download_file(
       &client,
-      &format!("{}/{}", pdir.to_str().unwrap(), download_url),
-      &file_path,
+      &download_url,
+      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
     ));
 
     pconf.jar_file = file_path;

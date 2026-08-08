@@ -13,6 +13,8 @@ use reqwest::Client;
 pub struct DownloadError {}
 
 pub async fn download_file(client: &Client, url: &str, path: &str) -> anyhow::Result<()> {
+  dbg!(url);
+
   // Reqwest setup
   let res = client.get(url).send().await?;
   let total_size = res.content_length();
