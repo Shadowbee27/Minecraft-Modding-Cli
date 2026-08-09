@@ -52,8 +52,8 @@ pub struct McVersion(pub String);
 // pub struct SoftwareInstallError {}
 
 pub trait SeverSoftware {
-  fn update(&self);
-  fn install(&self, pconf: ProjectConfig, pdir: &Path);
+  fn update(&mut self);
+  fn install(&mut self, pconf: ProjectConfig, pdir: &Path);
   fn get_supported_minecraft_versions() -> Vec<SupportedVersion>;
 }
 
@@ -83,7 +83,7 @@ impl ServerSoftware {
       Self::QUILT(_) => "Quilt",
     }
   }
-  pub fn install(&self, project_config: ProjectConfig, server_dir: &Path) {
+  pub fn install(&mut self, project_config: ProjectConfig, server_dir: &Path) {
     match self {
       Self::FABRIC(f) => f.install(project_config, server_dir),
       Self::FOLIA(f) => f.install(project_config, server_dir),

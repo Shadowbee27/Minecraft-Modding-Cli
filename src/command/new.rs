@@ -26,7 +26,7 @@ pub fn create_new_server(args: CreateNewArgs) {
     exit(1);
   }
 
-  let server_software: ServerSoftware = server_software_selector();
+  let mut server_software: ServerSoftware = server_software_selector();
 
   let modding_folder = server_software.get_moddification_dir();
 

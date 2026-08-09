@@ -1,14 +1,15 @@
 use colorful::{Color, Colorful};
-use std::path::Path;
-use std::process::exit;
-
-use super::SeverSoftware;
-use super::SupportedVersion;
-use crate::{common::download::download_file, config::ProjectConfig};
 use reqwest::Client;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
+use std::process::exit;
 use tokio::runtime::Runtime;
+
+use super::SeverSoftware;
+use super::SupportedVersion;
+use crate::tui::dialogs::flavor;
+use crate::{common::download::download_file, config::ProjectConfig};
 
 const FABRIC_URL: &str = "https://meta.fabricmc.net";
 const FABRIC_INFO_URL: &str = "/v2/versions";
@@ -65,7 +66,37 @@ impl Default for Fabric {
 }
 
 impl SeverSoftware for Fabric {
-  fn install(&self, mut pconf: ProjectConfig, pdir: &Path) {
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
+    let rt = Runtime::new().unwrap();
+    let info = match rt.block_on(get_fabric_info()) {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+
+    self.flavor_version = Version::parse(&flavor::select_flavor_version(
+      info
+        .loader_version
+        .iter()
+        .map(|v| v.version.as_str())
+        .collect(),
+    ))
+    .unwrap();
+
+    self.installer_version = Version::parse(flavor::select_fabric_installer_version(
+      info
+        .installer_version
+        .iter()
+        .map(|v| v.version.as_str())
+        .collect(),
+    ))
+    .unwrap();
+
     let client = Client::new();
     // BSP: https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.3/0.8.0/server/jar
     let download_url = format!(
@@ -73,13 +104,13 @@ impl SeverSoftware for Fabric {
       FABRIC_URL,
       FABRIC_DOWNLOAD_URL,
       pconf.mc_version.0,
-      pconf.flavor_version,
+      self.flavor_version,
       self.installer_version
     );
 
     let file_path = format!(
       "fabric-server-mc{}-fabric{}.jar",
-      pconf.mc_version.0, pconf.flavor_version
+      pconf.mc_version.0, self.flavor_version
     );
 
     let rt = Runtime::new().unwrap();
@@ -90,6 +121,7 @@ impl SeverSoftware for Fabric {
       &format!("{}/{}", pdir.to_str().unwrap(), file_path),
     ));
 
+    pconf.flavor = super::ServerSoftware::FABRIC(self.clone());
     pconf.jar_file = file_path;
 
     match pconf.save(pdir) {
@@ -115,7 +147,7 @@ impl SeverSoftware for Fabric {
     };
   }
 
-  fn update(&self) {
+  fn update(&mut self) {
     unimplemented!()
   }
 

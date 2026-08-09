@@ -19,11 +19,11 @@ impl Default for Bukkit {
 }
 
 impl SeverSoftware for Bukkit {
-  fn install(&self, pconf: ProjectConfig, pdir: &Path) {
+  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
     unimplemented!()
   }
 
-  fn update(&self) {
+  fn update(&mut self) {
     unimplemented!()
   }
 
