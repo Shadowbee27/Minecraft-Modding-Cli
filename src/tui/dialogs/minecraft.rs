@@ -1,9 +1,9 @@
-use crate::software::{McVersion, ServerSoftware, SupportedVersion};
-use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
-
 use colorful::{Color, Colorful};
 use inquire::InquireError;
 use std::process::exit;
+
+use crate::software::{McVersion, ServerSoftware, SupportedVersion};
+use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
 #[derive(Debug)]
 enum McVersionQuestion {
@@ -37,9 +37,7 @@ impl McVersionQuestion {
     let mut options = Vec::new();
     options.push(McVersionQuestion::ShowUnstable(show_unstable));
     for v in supported_version {
-      if show_unstable && v.stable {
-        options.push(McVersionQuestion::Version(v));
-      } else if !show_unstable {
+      if show_unstable && v.stable || !show_unstable {
         options.push(McVersionQuestion::Version(v));
       }
     }

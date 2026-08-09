@@ -1,17 +1,14 @@
-use std::{io, process::exit};
-
 use inquire::{InquireError, Select};
+use std::{io, process::exit};
 
 pub fn single_choice<T: std::fmt::Display>(
   list: Vec<T>,
   question: &str,
   help_msg: &str,
 ) -> Result<T, InquireError> {
-  Ok(
-    Select::new(question, list)
-      .with_help_message(help_msg)
-      .prompt()?,
-  )
+  Select::new(question, list)
+    .with_help_message(help_msg)
+    .prompt()
 }
 
 pub fn single_choice_fallback<T: std::fmt::Display + Clone>(

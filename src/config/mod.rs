@@ -1,8 +1,8 @@
+use semver::{BuildMetadata, Prerelease, Version};
+use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 
 use super::software::{McVersion, ServerSoftware};
-use semver::{BuildMetadata, Prerelease, Version};
-use serde::{Deserialize, Serialize};
 
 pub const CONFIG_PATH: &str = ".mcmc/config.toml";
 pub const CONFIG_VERSION: Version = Version {

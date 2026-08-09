@@ -2,13 +2,12 @@
 // Taken form https://gist.github.com/Tapanhaz/096e299bf060607b572d700e89a62529 and modified
 //
 
-use std::cmp::min;
-use std::fs::File;
-use std::io::Write;
-
 use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
+use std::cmp::min;
+use std::fs::File;
+use std::io::Write;
 
 pub struct DownloadError {}
 

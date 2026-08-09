@@ -1,9 +1,10 @@
-use super::SeverSoftware;
-use super::SupportedVersion;
-use crate::config::ProjectConfig;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+
+use super::SeverSoftware;
+use super::SupportedVersion;
+use crate::config::ProjectConfig;
 
 const NEOFORGE_URL: &str = "";
 

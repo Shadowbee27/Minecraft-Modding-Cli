@@ -79,7 +79,7 @@ impl SeverSoftware for Fabric {
       }
     };
 
-    self.flavor_version = Version::parse(&flavor::select_flavor_version(
+    self.flavor_version = Version::parse(flavor::select_flavor_version(
       info
         .loader_version
         .iter()

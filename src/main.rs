@@ -3,13 +3,14 @@ use colorful::{Color, Colorful};
 use std::fs::{exists, read_to_string};
 use std::process::exit;
 
-pub mod tui;
 use crate::command::{init, new};
+use crate::config::{CONFIG_PATH, ProjectConfig};
+
 pub mod command;
+pub mod common;
 pub mod config;
 pub mod software;
-use crate::config::{CONFIG_PATH, ProjectConfig};
-pub mod common;
+pub mod tui;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
