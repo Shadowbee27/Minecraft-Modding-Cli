@@ -1,4 +1,3 @@
-use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, path::Path};
 use strum::EnumIter;
@@ -127,19 +126,19 @@ impl ServerSoftware {
     dir
   }
 
-  pub fn get_flavor_version(self) -> Version {
+  pub fn get_flavor_version(self) -> String {
     match self {
-      Self::FABRIC(f) => f.flavor_version,
-      Self::FOLIA(f) => f.flavor_version,
-      Self::FORGE(f) => f.flavor_version,
-      Self::NEOFORGE(n) => n.flavor_version,
-      Self::PAPER(p) => p.flavor_version,
-      Self::BUKKIT(b) => b.flavor_version,
-      Self::QUILT(q) => q.flavor_version,
-      Self::VANILLA(v) => v.flavor_version,
-      Self::LegacyFabric(l) => l.flavor_version,
+      Self::FABRIC(f) => f.flavor_version.to_string(),
+      Self::FOLIA(f) => f.flavor_version.to_string(),
+      Self::FORGE(f) => f.flavor_version.to_string(),
+      Self::NEOFORGE(n) => n.flavor_version.to_string(),
+      Self::PAPER(p) => p.flavor_version.to_string(),
+      Self::BUKKIT(b) => b.flavor_version.to_string(),
+      Self::QUILT(q) => q.flavor_version.to_string(),
+      Self::VANILLA(v) => v.flavor_version.to_string(),
+      Self::LegacyFabric(l) => l.flavor_version.to_string(),
       Self::PURPUR(p) => p.flavor_version,
-      Self::SPIGGOT(s) => s.flavor_version,
+      Self::SPIGGOT(s) => s.flavor_version.to_string(),
     }
   }
 }

@@ -17,7 +17,7 @@ pub const CONFIG_VERSION: Version = Version {
 pub struct ProjectConfig {
   pub config_version: Version,
   pub flavor: ServerSoftware,
-  pub flavor_version: Version,
+  pub flavor_version: String,
   pub mc_version: McVersion,
   pub jar_file: String,
 }

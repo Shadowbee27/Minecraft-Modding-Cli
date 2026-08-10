@@ -1,5 +1,6 @@
 use colorful::{Color, Colorful};
-use reqwest::Client;
+use reqwest::Client as AClient;
+use reqwest::blocking::Client as BClient;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -67,8 +68,7 @@ impl Default for Fabric {
 
 impl SeverSoftware for Fabric {
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
-    let rt = Runtime::new().unwrap();
-    let info = match rt.block_on(get_fabric_info()) {
+    let info = match get_fabric_info() {
       Ok(meta) => meta,
       Err(e) => {
         eprintln!(
@@ -97,7 +97,7 @@ impl SeverSoftware for Fabric {
     ))
     .unwrap();
 
-    let client = Client::new();
+    let client = AClient::new();
     // BSP: https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.3/0.8.0/server/jar
     let download_url = format!(
       "{}{}{}/{}/{}/server/jar",
@@ -152,8 +152,7 @@ impl SeverSoftware for Fabric {
   }
 
   fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let runtime = Runtime::new().unwrap();
-    let info = match runtime.block_on(get_fabric_info()) {
+    let info = match get_fabric_info() {
       Ok(meta) => meta,
       Err(e) => {
         eprintln!(
@@ -171,15 +170,13 @@ impl SeverSoftware for Fabric {
   }
 }
 
-pub async fn get_fabric_info() -> anyhow::Result<FabricInfo> {
-  let client = Client::new();
+pub fn get_fabric_info() -> anyhow::Result<FabricInfo> {
+  let client = BClient::new();
 
   let response = client
     .get(format!("{}{}", FABRIC_URL, FABRIC_INFO_URL))
-    .send()
-    .await?
-    .json::<FabricInfo>()
-    .await?;
+    .send()?
+    .json::<FabricInfo>()?;
 
   Ok(response)
 }
@@ -190,8 +187,7 @@ mod tests {
 
   #[test]
   fn fabric_info_test() {
-    let rt = Runtime::new().unwrap();
-    let result = rt.block_on(get_fabric_info());
+    let result = get_fabric_info();
     dbg!(result).unwrap();
   }
 }
