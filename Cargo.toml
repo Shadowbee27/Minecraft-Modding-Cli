@@ -26,3 +26,4 @@ inquire = { version = "0.9.4", features = ["termion"] }
 inquire-derive = "0.9.4"
 strum = "0.28.0"
 colorful = "0.3.2"
+maven-toolbox = "0.0.3"
