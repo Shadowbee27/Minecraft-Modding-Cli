@@ -6,8 +6,7 @@ use std::path::Path;
 use std::process::exit;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
-use super::SupportedVersion;
+use super::{SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
 use crate::config::ProjectConfig;
 use crate::tui::dialogs::flavor::select_flavor_version;
@@ -79,7 +78,7 @@ impl SeverSoftware for Purpur {
     );
 
     let file_path = format!(
-      "purpur-mc{}-{}.jar",
+      "purpur-server-mc{}-{}.jar",
       pconf.mc_version.0, self.flavor_version
     );
 

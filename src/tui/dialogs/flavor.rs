@@ -1,11 +1,14 @@
 use colorful::{Color, Colorful};
 use inquire::InquireError;
-use std::process::exit;
+use std::{fmt, process::exit};
 
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
 // General version Question
-pub fn select_flavor_version(versions: Vec<&str>) -> &str {
+pub fn select_flavor_version<T>(versions: Vec<T>) -> T
+where
+  T: Clone + fmt::Display,
+{
   match single_choice(
     versions.clone(),
     "Which Server software version do you want to use?",

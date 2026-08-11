@@ -1,31 +1,98 @@
-use semver::Version;
+use crate::tui::dialogs::flavor::select_flavor_version;
+use colorful::{Color, Colorful};
+use reqwest::Client as AClient;
+use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fmt;
 use std::path::Path;
+use std::process::exit;
+use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
 use super::SupportedVersion;
+use crate::common::download::download_file;
 use crate::config::ProjectConfig;
 
-const PAPER_URL: &str = "";
+const PAPER_URL: &str = "https://fill.papermc.io/v3/projects/paper";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize, Debug, Clone)]
+pub struct PaperMCVersions {
+  pub versions: HashMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Paper {
-  pub flavor_version: Version,
+  pub flavor_version: i32,
 }
 
 // https://fill.papermc.io/swagger-ui/index.html
 
-impl Default for Paper {
-  fn default() -> Self {
-    Paper {
-      flavor_version: Version::new(0, 0, 0),
-    }
-  }
-}
-
 impl SeverSoftware for Paper {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
-    unimplemented!()
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
+    let builds = match get_builds(&pconf.mc_version.0) {
+      Ok(b) => b,
+      Err(e) => {
+        eprintln!(
+          "Error getting build metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    self.flavor_version = select_flavor_version(builds)
+      .parse::<i32>()
+      .expect("Failed to parse build version");
+
+    let download_url = match get_build_url(self.flavor_version, &pconf.mc_version.0) {
+      Ok(u) => u,
+      Err(e) => {
+        eprintln!(
+          "Error getting download url: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    let file_path = format!(
+      "paper-server-mc{}-build{}.jar",
+      &pconf.mc_version.0, self.flavor_version
+    );
+
+    let client = AClient::new();
+    let rt = Runtime::new().unwrap();
+
+    let download_result = rt.block_on(download_file(
+      &client,
+      &download_url,
+      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
+    ));
+
+    pconf.flavor = super::ServerSoftware::PAPER(self.clone());
+    pconf.flavor_version = self.flavor_version.to_string();
+    pconf.jar_file = file_path;
+
+    match pconf.save(pdir) {
+      Ok(_) => {}
+      Err(e) => {
+        eprintln!(
+          "Error while saving config file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    }
+
+    match download_result {
+      Ok(_) => {}
+      Err(e) => {
+        eprintln!(
+          "Error while downloading file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
   }
 
   fn update(&mut self) {
@@ -33,6 +100,105 @@ impl SeverSoftware for Paper {
   }
 
   fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    unimplemented!()
+    let versions = match get_paper_metadata() {
+      Ok(m) => m,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    let mut versions_vec = Vec::new();
+
+    for i in versions.versions {
+      for v in i.1 {
+        if v.contains('-') {
+          versions_vec.push(SupportedVersion {
+            version: v,
+            stable: false,
+          });
+        } else {
+          versions_vec.push(SupportedVersion {
+            version: v,
+            stable: true,
+          });
+        }
+      }
+    }
+
+    versions_vec
+  }
+}
+
+fn get_paper_metadata() -> anyhow::Result<PaperMCVersions> {
+  let client = BClient::new();
+  let info = client.get(PAPER_URL).send()?.json::<PaperMCVersions>()?;
+  Ok(info)
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Deserialize)]
+struct PaperBuildInfo {
+  downloads: PaperBuildMeta,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Deserialize)]
+struct PaperBuildMeta {
+  #[serde(rename(deserialize = "server:default"))]
+  server: PaperBuildDownloadMeta,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Deserialize)]
+struct PaperBuildDownloadMeta {
+  url: String,
+}
+
+fn get_build_url<T: fmt::Display, G: fmt::Display>(
+  build: T,
+  mc_version: G,
+) -> anyhow::Result<String> {
+  let client = BClient::new();
+  let info = client
+    .get(format!(
+      "{}/versions/{}/builds/{}",
+      PAPER_URL, mc_version, build
+    ))
+    .send()?
+    .json::<PaperBuildInfo>()?;
+  Ok(info.downloads.server.url)
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Build {
+  pub id: u64,
+}
+
+pub type BuildList = Vec<Build>;
+
+fn get_builds(mc_version: &str) -> anyhow::Result<Vec<String>> {
+  let client = BClient::new();
+  let info = client
+    .get(format!("{}/versions/{}/builds", PAPER_URL, mc_version))
+    .send()?
+    .json::<BuildList>()?;
+  Ok(info.iter().map(|b| b.id.to_string()).collect())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn paper_metadata() {
+    dbg!(get_paper_metadata()).unwrap();
+  }
+
+  #[test]
+  fn paper_supported_version() {
+    dbg!(Paper::get_supported_minecraft_versions());
   }
 }

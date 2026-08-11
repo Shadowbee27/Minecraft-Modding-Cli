@@ -170,7 +170,7 @@ impl SeverSoftware for Fabric {
   }
 }
 
-pub fn get_fabric_info() -> anyhow::Result<FabricInfo> {
+fn get_fabric_info() -> anyhow::Result<FabricInfo> {
   let client = BClient::new();
 
   let response = client
