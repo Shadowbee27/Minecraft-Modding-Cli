@@ -6,7 +6,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::config::ProjectConfig;
 
-const LEGACY_FABRIC_URL: &str = "";
+const LEGACY_FABRIC_URL: &str = "https://meta.legacyfabric.net/v2/versions";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LegacyFabric {

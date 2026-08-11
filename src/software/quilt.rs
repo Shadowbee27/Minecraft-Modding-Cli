@@ -6,6 +6,8 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::config::ProjectConfig;
 
+const QUILT_URL: &str = "https://meta.quiltmc.org/v3/versions";
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Quilt {
   pub flavor_version: Version,

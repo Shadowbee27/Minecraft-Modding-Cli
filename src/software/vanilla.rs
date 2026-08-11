@@ -6,7 +6,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::config::ProjectConfig;
 
-const VANILLA_URL: &str = "";
+const VANILLA_URL: &str = "https://piston-meta.mojang.com/mc/game/version_manifest.json";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Vanilla {
