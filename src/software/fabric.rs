@@ -12,9 +12,8 @@ use super::SupportedVersion;
 use crate::tui::dialogs::flavor;
 use crate::{common::download::download_file, config::ProjectConfig};
 
-const FABRIC_URL: &str = "https://meta.fabricmc.net";
-const FABRIC_INFO_URL: &str = "/v2/versions";
-const FABRIC_DOWNLOAD_URL: &str = "/v2/versions/loader/";
+const FABRIC_URL: &str = "https://meta.fabricmc.net/v2/versions";
+const FABRIC_DOWNLOAD_URL: &str = "/loader/";
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct FabricInfo {
@@ -174,7 +173,7 @@ fn get_fabric_info() -> anyhow::Result<FabricInfo> {
   let client = BClient::new();
 
   let response = client
-    .get(format!("{}{}", FABRIC_URL, FABRIC_INFO_URL))
+    .get(format!("{}", FABRIC_URL))
     .send()?
     .json::<FabricInfo>()?;
 
