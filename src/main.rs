@@ -2,6 +2,8 @@ use clap::*;
 use colorful::{Color, Colorful};
 use std::fs::{exists, read_to_string};
 use std::process::exit;
+// use tracing::Level;
+// use tracing_subscriber::FmtSubscriber;
 
 use crate::command::{init, new};
 use crate::config::{CONFIG_PATH, ProjectConfig};
@@ -27,6 +29,16 @@ enum BaseAction {
 }
 
 fn main() {
+  // // a builder for `FmtSubscriber`.
+  // let subscriber = FmtSubscriber::builder()
+  //   // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
+  //   // will be written to stdout.
+  //   .with_max_level(Level::WARN)
+  //   // completes the builder.
+  //   .finish();
+
+  // tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
   let args = Args::parse();
   match args.action {
     BaseAction::Init(initargs) => init::init_dir(initargs),

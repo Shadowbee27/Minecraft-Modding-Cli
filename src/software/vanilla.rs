@@ -1,29 +1,142 @@
-use semver::Version;
+use colorful::{Color, Colorful};
+use reqwest::Client as AClient;
+use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::process::exit;
+use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
 use super::SupportedVersion;
+use crate::common::download::download_file;
 use crate::config::ProjectConfig;
 
 const VANILLA_URL: &str = "https://piston-meta.mojang.com/mc/game/version_manifest.json";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Vanilla {
-  pub flavor_version: Version,
+  pub flavor_version: String,
 }
 
-impl Default for Vanilla {
-  fn default() -> Self {
-    Vanilla {
-      flavor_version: Version::new(0, 0, 0),
+#[derive(Debug, Clone, Deserialize)]
+struct VanillaVersionMetadata {
+  downloads: VanillaVersionDownloadMetadata,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct VanillaVersionDownloadMetadata {
+  server: VanillaServerDownloadMetadata,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct VanillaServerDownloadMetadata {
+  url: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct VanillaMetadata {
+  versions: Vec<VanillaVersions>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct VanillaVersions {
+  id: String,
+  #[serde(rename(deserialize = "type"))]
+  version_type: String,
+  url: String,
+}
+
+impl VanillaMetadata {
+  fn to_supported_version(self) -> Vec<SupportedVersion> {
+    let mut supported_versions = Vec::new();
+
+    for v in self.versions {
+      let stable;
+      if v.version_type == String::from("release") {
+        stable = true;
+      } else {
+        stable = false;
+      }
+
+      supported_versions.push(SupportedVersion {
+        version: v.id,
+        stable,
+      });
     }
+    supported_versions
   }
 }
 
 impl SeverSoftware for Vanilla {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
-    unimplemented!()
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
+    let metadata = match get_vanilla_metadata() {
+      Ok(m) => m,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    let mut info_url = String::new();
+    for m in metadata.versions {
+      if m.id == pconf.mc_version.0 {
+        info_url = m.url;
+        break;
+      }
+    }
+
+    let info = match get_vanilla_version_metadata(&info_url) {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+
+    self.flavor_version = pconf.mc_version.0.clone();
+
+    let client = AClient::new();
+    let download_url = info.downloads.server.url;
+
+    let file_path = format!("vanilla-server-mc{}.jar", pconf.mc_version.0);
+
+    let rt = Runtime::new().unwrap();
+
+    let result = rt.block_on(download_file(
+      &client,
+      &download_url,
+      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
+    ));
+
+    pconf.flavor = super::ServerSoftware::VANILLA(self.clone());
+    pconf.jar_file = file_path;
+
+    match pconf.save(pdir) {
+      Ok(_) => {}
+      Err(e) => {
+        eprintln!(
+          "Error while saving config file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    }
+
+    match result {
+      Ok(_) => {}
+      Err(e) => {
+        eprintln!(
+          "Error while downloading file: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
   }
 
   fn update(&mut self) {
@@ -31,6 +144,49 @@ impl SeverSoftware for Vanilla {
   }
 
   fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    unimplemented!()
+    let versions = match get_vanilla_metadata() {
+      Ok(m) => m,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    versions.to_supported_version()
+  }
+}
+
+fn get_vanilla_metadata() -> anyhow::Result<VanillaMetadata> {
+  let client = BClient::new();
+  Ok(client.get(VANILLA_URL).send()?.json::<VanillaMetadata>()?)
+}
+
+fn get_vanilla_version_metadata(metadata_url: &String) -> anyhow::Result<VanillaVersionMetadata> {
+  let client = BClient::new();
+  Ok(
+    client
+      .get(metadata_url)
+      .send()?
+      .json::<VanillaVersionMetadata>()?,
+  )
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  const METADATA: &str =
+    "https://piston-meta.mojang.com/v1/packages/dc69be58cf16ad99f4b1ae7360c9a29c8c819ca5/26.2.json";
+
+  #[test]
+  fn vanilla_metadata() {
+    dbg!(get_vanilla_metadata()).unwrap();
+  }
+
+  #[test]
+  fn vanilla_version_metadata() {
+    dbg!(get_vanilla_version_metadata(&METADATA.to_string())).unwrap();
   }
 }

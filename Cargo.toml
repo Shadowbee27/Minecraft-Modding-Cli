@@ -27,3 +27,7 @@ inquire-derive = "0.9.4"
 strum = "0.28.0"
 colorful = "0.3.2"
 maven-toolbox = "0.0.3"
+# tracing = { version = "0.1.44", default-features = false, features = ["std"] }
+# tracing-panic = "0.1.2"
+# tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
+# tracing-unwrap = "1.0.1"
