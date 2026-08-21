@@ -1,29 +1,117 @@
+use colorful::{Color, Colorful};
+use reqwest::blocking::Client;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::process::{Command, exit};
+use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
 use super::SupportedVersion;
+use crate::common::download::download_file;
 use crate::config::ProjectConfig;
 
 const QUILT_URL: &str = "https://meta.quiltmc.org/v3/versions";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Quilt {
-  pub flavor_version: Version,
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Quilt {}
+
+#[derive(Debug, Clone, Deserialize)]
+struct QuiltMeta {
+  game: Vec<QuiltMetaGame>,
+  // mappings: ,
+  // hashed: ,
+  // loader: ,
+  installer: Vec<QuiltMetaInstaller>,
 }
 
-impl Default for Quilt {
-  fn default() -> Self {
-    Quilt {
-      flavor_version: Version::new(0, 0, 0),
+impl QuiltMetaGame {
+  fn to_supported_versions(&self) -> SupportedVersion {
+    SupportedVersion {
+      version: self.version.clone(),
+      stable: self.stable,
     }
+  }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct QuiltMetaGame {
+  version: String,
+  stable: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct QuiltMetaInstaller {
+  version: String,
+}
+
+trait QuiltInstallerGetLatest {
+  fn get_latest(&self) -> Version;
+}
+
+impl QuiltInstallerGetLatest for Vec<QuiltMetaInstaller> {
+  fn get_latest(&self) -> Version {
+    let mut versions = Vec::new();
+    for q in self {
+      versions.push(Version::parse(q.version.as_str()).expect("Failed to parse semver"));
+    }
+    versions
+      .iter()
+      .max()
+      .expect("Failed to get latest installer version")
+      .clone()
   }
 }
 
 impl SeverSoftware for Quilt {
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
-    unimplemented!()
+    let meta = match get_quilt_meta() {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+
+    let installer_version = meta.installer.get_latest().to_string();
+
+    Runtime::new()
+      .unwrap()
+      .block_on(download_file(
+        &reqwest::Client::new(),
+        &format!("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/{}/quilt-installer-{}.jar", installer_version, installer_version),
+        &format!("{}/quilt_installer.jar", pdir.to_str().unwrap()).to_string(),
+      ))
+      .unwrap();
+    // java -jar quilt-installer-INSTALLER_VERSION.jar install server MINECRAFT_VERSION --download-server
+    match Command::new("java")
+      .args([
+        "-jar",
+        format!("{}/quilt_installer.jar", &pdir.to_str().unwrap()).as_str(),
+        "install",
+        "server",
+        pconf.mc_version.0.as_str(),
+        "--download-server",
+        format!("--install-dir={}", pdir.to_str().unwrap()).as_str(),
+      ])
+      .spawn()
+    {
+      Ok(cmd) => {
+        println!("----- Quilt Installer output -----");
+        cmd.wait_with_output().expect("Failed to wait for output");
+        println!("----- Quilt Installer output end -----")
+      }
+      Err(e) => {
+        eprintln!(
+          "Failed to run quilt installer: ({})\nPlease check your java install",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
   }
 
   fn update(&mut self) {
@@ -31,6 +119,25 @@ impl SeverSoftware for Quilt {
   }
 
   fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    unimplemented!()
+    let meta = match get_quilt_meta() {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    meta
+      .game
+      .iter()
+      .map(|v| v.to_supported_versions())
+      .collect()
   }
+}
+
+fn get_quilt_meta() -> anyhow::Result<QuiltMeta> {
+  let client = Client::new();
+  Ok(client.get(QUILT_URL).send()?.json::<QuiltMeta>()?)
 }

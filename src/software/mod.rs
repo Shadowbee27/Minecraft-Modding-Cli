@@ -134,7 +134,7 @@ impl ServerSoftware {
       Self::NEOFORGE(n) => n.flavor_version.to_string(),
       Self::PAPER(p) => p.flavor_version.to_string(),
       Self::BUKKIT(b) => b.flavor_version.to_string(),
-      Self::QUILT(q) => q.flavor_version.to_string(),
+      Self::QUILT(_) => String::new(),
       Self::VANILLA(v) => v.flavor_version.to_string(),
       Self::LegacyFabric(l) => l.flavor_version.to_string(),
       Self::PURPUR(p) => p.flavor_version,

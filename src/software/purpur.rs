@@ -92,6 +92,7 @@ impl SeverSoftware for Purpur {
     ));
 
     pconf.flavor = super::ServerSoftware::PURPUR(self.clone());
+    pconf.flavor_version = self.flavor_version.clone();
     pconf.jar_file = file_path;
 
     match pconf.save(pdir) {

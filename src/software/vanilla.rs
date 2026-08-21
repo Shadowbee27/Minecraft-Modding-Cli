@@ -98,8 +98,6 @@ impl SeverSoftware for Vanilla {
       }
     };
 
-    self.flavor_version = pconf.mc_version.0.clone();
-
     let client = AClient::new();
     let download_url = info.downloads.server.url;
 
@@ -113,8 +111,10 @@ impl SeverSoftware for Vanilla {
       &format!("{}/{}", pdir.to_str().unwrap(), file_path),
     ));
 
+    self.flavor_version = pconf.mc_version.0.clone();
     pconf.flavor = super::ServerSoftware::VANILLA(self.clone());
     pconf.jar_file = file_path;
+    pconf.flavor_version = self.flavor_version.clone();
 
     match pconf.save(pdir) {
       Ok(_) => {}

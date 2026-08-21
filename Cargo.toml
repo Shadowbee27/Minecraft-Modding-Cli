@@ -11,7 +11,7 @@ edition = "2024"
 [dependencies]
 clap = { version = "4.6.6", features = ["derive"] }
 serde =  { version = "1.0.229", features = ["derive"] }
-toml = "1.1.4+spec-1.1.0"
+toml = "1.1.4"
 anyhow = "1.0.104"
 ratatui = { version = "0.30.2", default-features = false ,features = ["termion"] }
 color-eyre = "0.6.5"
@@ -26,7 +26,7 @@ inquire = { version = "0.9.4", features = ["termion"] }
 inquire-derive = "0.9.4"
 strum = "0.28.0"
 colorful = "0.3.2"
-maven-toolbox = "0.0.3"
+quick-xml = { version = "0.41.0", features = ["serialize"] }
 # tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 # tracing-panic = "0.1.2"
 # tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }

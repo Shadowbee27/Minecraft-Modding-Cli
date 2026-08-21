@@ -6,12 +6,20 @@ use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use std::cmp::min;
+use std::fmt;
 use std::fs::File;
 use std::io::Write;
 
 pub struct DownloadError {}
 
-pub async fn download_file(client: &Client, url: &str, path: &str) -> anyhow::Result<()> {
+pub async fn download_file<
+  T: fmt::Display + std::fmt::Debug + reqwest::IntoUrl + std::marker::Copy,
+  G: fmt::Display + std::convert::AsRef<std::path::Path> + std::marker::Copy,
+>(
+  client: &Client,
+  url: T,
+  path: G,
+) -> anyhow::Result<()> {
   dbg!(url);
 
   // Reqwest setup
