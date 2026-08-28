@@ -10,24 +10,26 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.6.6", features = ["derive"] }
-serde =  { version = "1.0.229", features = ["derive"] }
-toml = "1.1.4"
-ratatui = { version = "0.30.2", default-features = false ,features = ["termion"] }
 color-eyre = "0.6.5"
-semver = { version = "1.0.28", features = ["serde"] }
-tokio = { version = "1.53.1", features = ["full"] }
-indicatif = "0.18.6"
-futures-util = "0.3.34"
+colorful = "0.3.2"
 error-chain = "0.12.4"
+futures-util = "0.3.34"
 futures = "0.3.34"
-reqwest = { version = "0.13.4", features = ["blocking", "stream", "json"] }
+indicatif = "0.18.6"
 inquire = { version = "0.9.4", features = ["termion"] }
 inquire-derive = "0.9.4"
-strum = "0.28.0"
-colorful = "0.3.2"
 quick-xml = { version = "0.42.0", features = ["serialize"] }
-regex = "1.13.1"
+ratatui = { version = "0.30.2", default-features = false ,features = ["termion"] }
 rayon = "1.12.0"
+regex = "1.13.1"
+reqwest = { version = "0.13.4", features = ["blocking", "stream", "json"] }
+semver = { version = "1.0.28", features = ["serde"] }
+serde =  { version = "1.0.229", features = ["derive"] }
+strum = "0.28.0"
+tokio = { version = "1.53.1", features = ["full"] }
+toml = "1.1.4"
+
+
 # tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 # tracing-panic = "0.1.2"
 # tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
