@@ -5,7 +5,7 @@
 [
   {
     "label": "Run new",
-    "adapter": "CodeLLDB",
+    "adapter": "probe-rs",
     "program": "mcmc",
     "request": "launch",
     "build": {

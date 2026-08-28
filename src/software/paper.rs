@@ -1,12 +1,12 @@
 use crate::tui::dialogs::flavor::select_flavor_version;
-use colorful::{Color, Colorful};
+use color_eyre::eyre::Result;
+use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 use std::path::Path;
-use std::process::exit;
 use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
@@ -29,34 +29,16 @@ pub struct Paper {
 // https://fill.papermc.io/swagger-ui/index.html
 
 impl SeverSoftware for Paper {
-  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
-    let builds = match get_builds(&pconf.mc_version.0) {
-      Ok(b) => b,
-      Err(e) => {
-        eprintln!(
-          "Error getting build metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    self.flavor_version = select_flavor_version(builds)
-      .parse::<i32>()
-      .expect("Failed to parse build version");
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    let builds = get_builds(&pconf.mc_version.0)?;
 
-    let download_url = match get_build_url(self.flavor_version, &pconf.mc_version.0) {
-      Ok(u) => u,
-      Err(e) => {
-        eprintln!(
-          "Error getting download url: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
+
+    let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
+
     let file_path = format!(
       "paper-server-mc{}-build{}.jar",
-      &pconf.mc_version.0, self.flavor_version
+      pconf.mc_version.0, self.flavor_version
     );
 
     let client = AClient::new();
@@ -72,44 +54,17 @@ impl SeverSoftware for Paper {
     pconf.flavor_version = self.flavor_version.to_string();
     pconf.jar_file = file_path;
 
-    match pconf.save(pdir) {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while saving config file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    }
+    pconf.save(pdir)?;
 
-    match download_result {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while downloading file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    download_result
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let versions = match get_paper_metadata() {
-      Ok(m) => m,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    let versions = get_paper_metadata()?;
     let mut versions_vec = Vec::new();
 
     for i in versions.versions {
@@ -128,11 +83,11 @@ impl SeverSoftware for Paper {
       }
     }
 
-    versions_vec
+    Ok(versions_vec)
   }
 }
 
-fn get_paper_metadata() -> anyhow::Result<PaperMCVersions> {
+fn get_paper_metadata() -> color_eyre::Result<PaperMCVersions> {
   let client = BClient::new();
   let info = client.get(PAPER_URL).send()?.json::<PaperMCVersions>()?;
   Ok(info)
@@ -160,7 +115,7 @@ struct PaperBuildDownloadMeta {
 fn get_build_url<T: fmt::Display, G: fmt::Display>(
   build: T,
   mc_version: G,
-) -> anyhow::Result<String> {
+) -> color_eyre::Result<String> {
   let client = BClient::new();
   let info = client
     .get(format!(
@@ -179,13 +134,13 @@ pub struct Build {
 
 pub type BuildList = Vec<Build>;
 
-fn get_builds(mc_version: &str) -> anyhow::Result<Vec<String>> {
+fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
   let client = BClient::new();
   let info = client
     .get(format!("{}/versions/{}/builds", PAPER_URL, mc_version))
     .send()?
     .json::<BuildList>()?;
-  Ok(info.iter().map(|b| b.id.to_string()).collect())
+  Ok(info.par_iter().map(|b| b.id.to_string()).collect())
 }
 
 #[cfg(test)]
@@ -199,6 +154,6 @@ mod tests {
 
   #[test]
   fn paper_supported_version() {
-    dbg!(Paper::get_supported_minecraft_versions());
+    dbg!(Paper::get_supported_minecraft_versions().unwrap());
   }
 }

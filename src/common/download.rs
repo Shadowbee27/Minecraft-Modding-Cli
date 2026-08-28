@@ -19,7 +19,7 @@ pub async fn download_file<
   client: &Client,
   url: T,
   path: G,
-) -> anyhow::Result<()> {
+) -> color_eyre::Result<()> {
   dbg!(url);
 
   // Reqwest setup

@@ -1,5 +1,7 @@
+use color_eyre::eyre::Result;
 use colorful::{Color, Colorful};
 use inquire::InquireError;
+use rayon::prelude::*;
 use std::process::exit;
 
 use crate::software::{McVersion, ServerSoftware, SupportedVersion};
@@ -45,9 +47,9 @@ impl McVersionQuestion {
   }
 }
 
-pub fn mc_version_select(software: &ServerSoftware) -> McVersion {
+pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
   let mut show_unstable = true;
-  let mc_versions = ServerSoftware::get_supported_minecraft_versions(software);
+  let mc_versions = ServerSoftware::get_supported_minecraft_versions(software)?;
   let mut question = McVersionQuestion::from_supported_version(mc_versions.clone(), show_unstable);
   loop {
     match single_choice(
@@ -56,7 +58,7 @@ pub fn mc_version_select(software: &ServerSoftware) -> McVersion {
       "Esc to cancel",
     ) {
       Ok(ans) => match ans {
-        McVersionQuestion::Version(v) => return McVersion(v.version),
+        McVersionQuestion::Version(v) => return color_eyre::eyre::Ok(McVersion(v.version)),
         McVersionQuestion::ShowUnstable(_) => {
           show_unstable = !show_unstable;
           question = McVersionQuestion::from_supported_version(mc_versions.clone(), show_unstable);
@@ -93,9 +95,9 @@ pub fn mc_version_select(software: &ServerSoftware) -> McVersion {
     }
   }
 
-  McVersion(single_choice_fallback(
-    mc_versions.iter().map(|v| v.version.clone()).collect(),
+  color_eyre::eyre::Ok(McVersion(single_choice_fallback(
+    mc_versions.par_iter().map(|v| v.version.clone()).collect(),
     "Which Minecraft version do you want to use?",
     "Leave empty to cancel",
-  ))
+  )?))
 }

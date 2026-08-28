@@ -1,4 +1,6 @@
+use color_eyre::eyre::Result;
 use colorful::{Color, Colorful};
+use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use semver::Version;
@@ -66,7 +68,7 @@ impl Default for Fabric {
 }
 
 impl SeverSoftware for Fabric {
-  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let info = match get_fabric_info() {
       Ok(meta) => meta,
       Err(e) => {
@@ -81,20 +83,18 @@ impl SeverSoftware for Fabric {
     self.flavor_version = Version::parse(flavor::select_flavor_version(
       info
         .loader_version
-        .iter()
+        .par_iter()
         .map(|v| v.version.as_str())
         .collect(),
-    ))
-    .unwrap();
+    )?)?;
 
     self.installer_version = Version::parse(flavor::select_fabric_installer_version(
       info
         .installer_version
-        .iter()
+        .par_iter()
         .map(|v| v.version.as_str())
         .collect(),
-    ))
-    .unwrap();
+    )?)?;
 
     let client = AClient::new();
     // BSP: https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.3/0.8.0/server/jar
@@ -123,59 +123,31 @@ impl SeverSoftware for Fabric {
     pconf.flavor = super::ServerSoftware::FABRIC(self.clone());
     pconf.jar_file = file_path;
 
-    match pconf.save(pdir) {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while saving config file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    }
+    pconf.save(pdir)?;
 
-    match result {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while downloading file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    result
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let info = match get_fabric_info() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    info
-      .game_version
-      .iter()
-      .map(|v| v.to_supported_version())
-      .collect()
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    let info = get_fabric_info()?;
+    Ok(
+      info
+        .game_version
+        .par_iter()
+        .map(|v| v.to_supported_version())
+        .collect(),
+    )
   }
 }
 
-fn get_fabric_info() -> anyhow::Result<FabricInfo> {
+fn get_fabric_info() -> color_eyre::Result<FabricInfo> {
   let client = BClient::new();
 
-  let response = client
-    .get(format!("{}", FABRIC_URL))
-    .send()?
-    .json::<FabricInfo>()?;
+  let response = client.get(FABRIC_URL).send()?.json::<FabricInfo>()?;
 
   Ok(response)
 }

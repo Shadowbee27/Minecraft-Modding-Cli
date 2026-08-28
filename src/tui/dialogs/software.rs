@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use colorful::{Color, Colorful};
 use inquire::InquireError;
 use std::process::exit;
@@ -6,14 +7,14 @@ use strum::IntoEnumIterator;
 use crate::software::ServerSoftware;
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
-pub fn server_software_selector() -> ServerSoftware {
+pub fn server_software_selector() -> Result<ServerSoftware> {
   match single_choice(
     ServerSoftware::iter().collect(),
     "Which Server software do you want to use?",
     "Esc to cancel",
   ) {
     Ok(ans) => {
-      return ans;
+      return Ok(ans);
     }
     Err(e) => match e {
       InquireError::NotTTY => {

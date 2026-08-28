@@ -23,7 +23,7 @@ pub struct ProjectConfig {
 }
 
 impl ProjectConfig {
-  pub fn save(&self, project_dir: &Path) -> anyhow::Result<()> {
+  pub fn save(&self, project_dir: &Path) -> color_eyre::Result<()> {
     let serialized = toml::to_string(&self)?;
 
     fs::write(project_dir.join(CONFIG_PATH), serialized)?;

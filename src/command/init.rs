@@ -7,6 +7,6 @@ pub struct InitArgs {
   pub name: PathBuf,
 }
 
-pub fn init_dir(args: InitArgs) {
+pub fn init_dir(_args: InitArgs) {
   todo!()
 }

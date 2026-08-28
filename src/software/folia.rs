@@ -1,5 +1,7 @@
 use crate::tui::dialogs::flavor::select_flavor_version;
+use color_eyre::eyre::Result;
 use colorful::{Color, Colorful};
+use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
@@ -29,7 +31,7 @@ pub struct Folia {
 // https://fill.papermc.io/swagger-ui/index.html
 
 impl SeverSoftware for Folia {
-  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let builds = match get_builds(&pconf.mc_version.0) {
       Ok(b) => b,
       Err(e) => {
@@ -40,23 +42,12 @@ impl SeverSoftware for Folia {
         exit(1)
       }
     };
-    self.flavor_version = select_flavor_version(builds)
-      .parse::<i32>()
-      .expect("Failed to parse build version");
+    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
 
-    let download_url = match get_build_url(self.flavor_version, &pconf.mc_version.0) {
-      Ok(u) => u,
-      Err(e) => {
-        eprintln!(
-          "Error getting download url: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
     let file_path = format!(
       "folia-server-mc{}-build{}.jar",
-      &pconf.mc_version.0, self.flavor_version
+      pconf.mc_version.0, self.flavor_version
     );
 
     let client = AClient::new();
@@ -72,46 +63,19 @@ impl SeverSoftware for Folia {
     pconf.flavor_version = self.flavor_version.to_string();
     pconf.jar_file = file_path;
 
-    match pconf.save(pdir) {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while saving config file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    }
+    pconf.save(pdir)?;
 
-    match download_result {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while downloading file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    download_result
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let versions = match get_folia_metadata() {
-      Ok(m) => m,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    let mut versions_vec = Vec::new();
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    let versions = get_folia_metadata()?;
 
+    let mut versions_vec = Vec::new();
     for i in versions.versions {
       for v in i.1 {
         if v.contains('-') {
@@ -128,11 +92,11 @@ impl SeverSoftware for Folia {
       }
     }
 
-    versions_vec
+    Ok(versions_vec)
   }
 }
 
-fn get_folia_metadata() -> anyhow::Result<FoliaMCVersions> {
+fn get_folia_metadata() -> color_eyre::Result<FoliaMCVersions> {
   let client = BClient::new();
   let info = client.get(FOLIA_URL).send()?.json::<FoliaMCVersions>()?;
   Ok(info)
@@ -160,7 +124,7 @@ struct FoliaBuildDownloadMeta {
 fn get_build_url<T: fmt::Display, G: fmt::Display>(
   build: T,
   mc_version: G,
-) -> anyhow::Result<String> {
+) -> color_eyre::Result<String> {
   let client = BClient::new();
   let info = client
     .get(format!(
@@ -179,13 +143,13 @@ pub struct Build {
 
 pub type BuildList = Vec<Build>;
 
-fn get_builds(mc_version: &str) -> anyhow::Result<Vec<String>> {
+fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
   let client = BClient::new();
   let info = client
     .get(format!("{}/versions/{}/builds", FOLIA_URL, mc_version))
     .send()?
     .json::<BuildList>()?;
-  Ok(info.iter().map(|b| b.id.to_string()).collect())
+  Ok(info.par_iter().map(|b| b.id.to_string()).collect())
 }
 
 #[cfg(test)]
@@ -199,6 +163,6 @@ mod tests {
 
   #[test]
   fn folia_supported_version() {
-    dbg!(Folia::get_supported_minecraft_versions());
+    dbg!(Folia::get_supported_minecraft_versions().unwrap());
   }
 }

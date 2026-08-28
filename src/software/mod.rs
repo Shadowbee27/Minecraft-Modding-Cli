@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, path::Path};
 use strum::EnumIter;
@@ -24,8 +25,8 @@ pub mod spiggot;
 pub mod vanilla;
 
 // Unlikely to be supported: Sponge, Babric, BTA (Babric), Java agent, liteloader RisugamisModLoader, Nil loader, Ornithe, Rift
-// Todo: bukkit, forge, neoforge, quilt, spiggot
-// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla
+// Todo: bukkit, forge, neoforge, spiggot
+// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt
 // update done:
 #[derive(Debug, Clone, Deserialize, Serialize, EnumIter)]
 pub enum ServerSoftware {
@@ -42,7 +43,7 @@ pub enum ServerSoftware {
   VANILLA(Vanilla),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SupportedVersion {
   pub version: String, // semver can't be used thx to minecraft
   pub stable: bool,
@@ -58,13 +59,13 @@ impl std::fmt::Display for SupportedVersion {
 pub struct McVersion(pub String);
 
 pub trait SeverSoftware {
-  fn update(&mut self);
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path);
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion>;
+  fn update(&mut self) -> Result<()>;
+  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()>;
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>>;
 }
 
 impl ServerSoftware {
-  pub fn get_supported_minecraft_versions(&self) -> Vec<SupportedVersion> {
+  pub fn get_supported_minecraft_versions(&self) -> Result<Vec<SupportedVersion>> {
     match self {
       Self::FABRIC(_) => Fabric::get_supported_minecraft_versions(),
       Self::FOLIA(_) => Folia::get_supported_minecraft_versions(),
@@ -95,7 +96,7 @@ impl ServerSoftware {
       Self::SPIGGOT(_) => "Spiggot",
     }
   }
-  pub fn install(&mut self, project_config: ProjectConfig, server_dir: &Path) {
+  pub fn install(&mut self, project_config: ProjectConfig, server_dir: &Path) -> Result<()> {
     match self {
       Self::FABRIC(f) => f.install(project_config, server_dir),
       Self::FOLIA(f) => f.install(project_config, server_dir),

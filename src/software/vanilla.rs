@@ -1,9 +1,8 @@
-use colorful::{Color, Colorful};
+use color_eyre::eyre::Result;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::exit;
 use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
@@ -47,16 +46,11 @@ struct VanillaVersions {
 }
 
 impl VanillaMetadata {
-  fn to_supported_version(self) -> Vec<SupportedVersion> {
+  fn to_supported_version(&self) -> Vec<SupportedVersion> {
     let mut supported_versions = Vec::new();
 
-    for v in self.versions {
-      let stable;
-      if v.version_type == String::from("release") {
-        stable = true;
-      } else {
-        stable = false;
-      }
+    for v in self.versions.clone() {
+      let stable = v.version_type == "release";
 
       supported_versions.push(SupportedVersion {
         version: v.id,
@@ -68,17 +62,8 @@ impl VanillaMetadata {
 }
 
 impl SeverSoftware for Vanilla {
-  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
-    let metadata = match get_vanilla_metadata() {
-      Ok(m) => m,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    let metadata = get_vanilla_metadata()?;
     let mut info_url = String::new();
     for m in metadata.versions {
       if m.id == pconf.mc_version.0 {
@@ -87,16 +72,7 @@ impl SeverSoftware for Vanilla {
       }
     }
 
-    let info = match get_vanilla_version_metadata(&info_url) {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    let info = get_vanilla_version_metadata(&info_url)?;
 
     let client = AClient::new();
     let download_url = info.downloads.server.url;
@@ -116,54 +92,28 @@ impl SeverSoftware for Vanilla {
     pconf.jar_file = file_path;
     pconf.flavor_version = self.flavor_version.clone();
 
-    match pconf.save(pdir) {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while saving config file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    }
+    pconf.save(pdir)?;
 
-    match result {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while downloading file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    result
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let versions = match get_vanilla_metadata() {
-      Ok(m) => m,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    versions.to_supported_version()
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    Ok(get_vanilla_metadata()?.to_supported_version())
   }
 }
 
-fn get_vanilla_metadata() -> anyhow::Result<VanillaMetadata> {
+fn get_vanilla_metadata() -> color_eyre::Result<VanillaMetadata> {
   let client = BClient::new();
   Ok(client.get(VANILLA_URL).send()?.json::<VanillaMetadata>()?)
 }
 
-fn get_vanilla_version_metadata(metadata_url: &String) -> anyhow::Result<VanillaVersionMetadata> {
+fn get_vanilla_version_metadata(
+  metadata_url: &String,
+) -> color_eyre::Result<VanillaVersionMetadata> {
   let client = BClient::new();
   Ok(
     client

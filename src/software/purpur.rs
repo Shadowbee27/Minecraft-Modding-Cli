@@ -1,9 +1,9 @@
-use colorful::{Color, Colorful};
+use color_eyre::eyre::Result;
+use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::exit;
 use tokio::runtime::Runtime;
 
 use super::{SeverSoftware, SupportedVersion};
@@ -58,19 +58,10 @@ pub struct Purpur {
 }
 
 impl SeverSoftware for Purpur {
-  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) {
-    let info = match get_purpur_versions(&pconf.mc_version.0) {
-      Ok(m) => m,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    let info = get_purpur_versions(&pconf.mc_version.0)?;
     self.flavor_version =
-      select_flavor_version(info.to_vec().iter().map(|v| v.as_str()).collect()).to_string();
+      select_flavor_version(info.to_vec().par_iter().map(|v| v.as_str()).collect())?.to_string();
 
     let download_url = format!(
       "{}/{}/{}/download",
@@ -95,55 +86,27 @@ impl SeverSoftware for Purpur {
     pconf.flavor_version = self.flavor_version.clone();
     pconf.jar_file = file_path;
 
-    match pconf.save(pdir) {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while saving config file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    }
+    pconf.save(pdir)?;
 
-    match download_result {
-      Ok(_) => {}
-      Err(e) => {
-        eprintln!(
-          "Error while downloading file: ({})",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    download_result
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let info = match get_purpur_mc_versions() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    info.to_supported_version()
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    Ok(get_purpur_mc_versions()?.to_supported_version())
   }
 }
 
-fn get_purpur_mc_versions() -> anyhow::Result<PurpurMCInfo> {
+fn get_purpur_mc_versions() -> color_eyre::Result<PurpurMCInfo> {
   let c = BClient::new();
   let info = c.get(PURPUR_URL).send()?.json::<PurpurMCInfo>()?;
   Ok(info)
 }
 
-fn get_purpur_versions(mc_version: &str) -> anyhow::Result<PurpurVersionInfo> {
+fn get_purpur_versions(mc_version: &str) -> color_eyre::Result<PurpurVersionInfo> {
   let c = BClient::new();
 
   let info = c

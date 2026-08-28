@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -6,7 +7,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::config::ProjectConfig;
 
-const SPIGGOT_URL: &str = "";
+const _SPIGGOT_URL: &str = "hub.spigotmc.org";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Spiggot {
@@ -22,15 +23,15 @@ impl Default for Spiggot {
 }
 
 impl SeverSoftware for Spiggot {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
+  fn install(&mut self, _pconf: ProjectConfig, _pdir: &Path) -> Result<()> {
     unimplemented!()
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
     unimplemented!()
   }
 }

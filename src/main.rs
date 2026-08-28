@@ -1,9 +1,6 @@
 use clap::*;
-use colorful::{Color, Colorful};
+use color_eyre::eyre::{Context, Ok, Result, eyre};
 use std::fs::{exists, read_to_string};
-use std::process::exit;
-// use tracing::Level;
-// use tracing_subscriber::FmtSubscriber;
 
 use crate::command::{init, new};
 use crate::config::{CONFIG_PATH, ProjectConfig};
@@ -28,7 +25,9 @@ enum BaseAction {
   // TODO: Update(software & mods), Install, ...
 }
 
-fn main() {
+fn main() -> Result<()> {
+  color_eyre::install()?;
+
   // // a builder for `FmtSubscriber`.
   // let subscriber = FmtSubscriber::builder()
   //   // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
@@ -42,48 +41,22 @@ fn main() {
   let args = Args::parse();
   match args.action {
     BaseAction::Init(initargs) => init::init_dir(initargs),
-    BaseAction::New(newargs) => new::create_new_server(newargs),
+    BaseAction::New(newargs) => new::create_new_server(newargs)?,
   }
+  Ok(())
 }
 
-fn load_config() -> ProjectConfig {
-  let exists = match exists(CONFIG_PATH) {
-    Ok(bool) => bool,
-    Err(e) => {
-      eprintln!(
-        "Failed to check if config exists: ({})!",
-        e.to_string().color(Color::Red).bold()
-      );
-      exit(1)
-    }
-  };
+fn load_config() -> Result<ProjectConfig> {
+  let exists = exists(CONFIG_PATH).wrap_err("Failed to check if project-config exists")?;
 
   if !exists {
-    eprintln!("Config not found in current directory!");
-    exit(1)
+    return Err(eyre!("Config not found in current directory!"));
   }
 
-  let config = match read_to_string(CONFIG_PATH) {
-    Ok(f) => f,
-    Err(e) => {
-      eprintln!(
-        "Failed to read config: ({})",
-        e.to_string().color(Color::Red).bold()
-      );
-      exit(1)
-    }
-  };
+  let config = read_to_string(CONFIG_PATH).wrap_err("Failed to read config")?;
 
-  let toml_config: ProjectConfig = match toml::from_str(&config) {
-    Ok(c) => c,
-    Err(e) => {
-      eprintln!(
-        "Parsing config failed:\n {}",
-        e.to_string().color(Color::Red).bold()
-      );
-      exit(1)
-    }
-  };
+  let toml_config: ProjectConfig =
+    toml::from_str(&config).wrap_err("Failed to prase Project config")?;
 
-  toml_config
+  Ok(toml_config)
 }

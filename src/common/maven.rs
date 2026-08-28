@@ -32,13 +32,14 @@ pub struct VersionsList {
 pub async fn get_versions<T: std::fmt::Display, G: std::fmt::Display>(
   group_id: T,
   base_url: G,
-) -> anyhow::Result<MavenMetadata> {
+) -> color_eyre::Result<MavenMetadata> {
   let fetch_url = format!("{base_url}/{group_id}/maven-metadata.xml");
   dbg!(&fetch_url);
   let client = Client::new();
   let result = client.get(fetch_url).send().await?;
   let raw = result.text().await?;
   let meta: MavenMetadata = from_str(&raw)?;
+  dbg!(&meta);
   Ok(meta)
 }
 
@@ -49,7 +50,15 @@ mod tests {
   use super::*;
 
   #[test]
-  fn get_forge_meta() {}
+  fn get_forge_meta() {
+    let rt = Runtime::new().unwrap();
+    //
+    rt.block_on(get_versions(
+      "net/minecraftforge/forge",
+      "https://maven.minecraftforge.net/releases",
+    ))
+    .unwrap();
+  }
 
   #[test]
   fn get_neo_meta() {

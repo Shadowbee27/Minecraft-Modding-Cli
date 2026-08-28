@@ -1,9 +1,10 @@
-use colorful::{Color, Colorful};
+use color_eyre::eyre::{ContextCompat, OptionExt, Result};
+use rayon::prelude::*;
 use reqwest::blocking::Client;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::{Command, exit};
+use std::process::Command;
 use tokio::runtime::Runtime;
 
 use super::SeverSoftware;
@@ -56,7 +57,7 @@ impl QuiltInstallerGetLatest for Vec<QuiltMetaInstaller> {
       versions.push(Version::parse(q.version.as_str()).expect("Failed to parse semver"));
     }
     versions
-      .iter()
+      .par_iter()
       .max()
       .expect("Failed to get latest installer version")
       .clone()
@@ -64,17 +65,8 @@ impl QuiltInstallerGetLatest for Vec<QuiltMetaInstaller> {
 }
 
 impl SeverSoftware for Quilt {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) {
-    let meta = match get_quilt_meta() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    let meta = get_quilt_meta()?;
 
     let installer_version = meta.installer.get_latest().to_string();
 
@@ -83,61 +75,58 @@ impl SeverSoftware for Quilt {
       .block_on(download_file(
         &reqwest::Client::new(),
         &format!("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/{}/quilt-installer-{}.jar", installer_version, installer_version),
-        &format!("{}/quilt_installer.jar", pdir.to_str().unwrap()).to_string(),
+        &format!("{}/quilt_installer.jar", pdir.to_str().wrap_err("Failed to convert project dir to string")?).to_string(),
       ))
-      .unwrap();
+    ?;
     // java -jar quilt-installer-INSTALLER_VERSION.jar install server MINECRAFT_VERSION --download-server
-    match Command::new("java")
+    let cmd = Command::new("java")
       .args([
         "-jar",
-        format!("{}/quilt_installer.jar", &pdir.to_str().unwrap()).as_str(),
+        format!(
+          "{}/quilt_installer.jar",
+          pdir
+            .to_str()
+            .ok_or_eyre("Failed to convert project dir to string")?
+        )
+        .as_str(),
         "install",
         "server",
         pconf.mc_version.0.as_str(),
         "--download-server",
-        format!("--install-dir={}", pdir.to_str().unwrap()).as_str(),
+        format!(
+          "--install-dir={}",
+          pdir
+            .to_str()
+            .ok_or_eyre("Failed to convert project dir to string")?
+        )
+        .as_str(),
       ])
-      .spawn()
-    {
-      Ok(cmd) => {
-        println!("----- Quilt Installer output -----");
-        cmd.wait_with_output().expect("Failed to wait for output");
-        println!("----- Quilt Installer output end -----")
-      }
-      Err(e) => {
-        eprintln!(
-          "Failed to run quilt installer: ({})\nPlease check your java install",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+      .spawn()?;
+
+    println!("----- Quilt Installer output -----");
+    cmd.wait_with_output().expect("Failed to wait for output");
+    println!("----- Quilt Installer output end -----");
+
+    Ok(())
   }
 
-  fn update(&mut self) {
+  fn update(&mut self) -> Result<()> {
     unimplemented!()
   }
 
-  fn get_supported_minecraft_versions() -> Vec<SupportedVersion> {
-    let meta = match get_quilt_meta() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    meta
-      .game
-      .iter()
-      .map(|v| v.to_supported_versions())
-      .collect()
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
+    let meta = get_quilt_meta()?;
+    Ok(
+      meta
+        .game
+        .par_iter()
+        .map(|v| v.to_supported_versions())
+        .collect(),
+    )
   }
 }
 
-fn get_quilt_meta() -> anyhow::Result<QuiltMeta> {
+fn get_quilt_meta() -> color_eyre::Result<QuiltMeta> {
   let client = Client::new();
   Ok(client.get(QUILT_URL).send()?.json::<QuiltMeta>()?)
 }

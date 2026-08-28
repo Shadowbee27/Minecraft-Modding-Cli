@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use colorful::{Color, Colorful};
 use inquire::InquireError;
 use std::{fmt, process::exit};
@@ -5,7 +6,7 @@ use std::{fmt, process::exit};
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
 // General version Question
-pub fn select_flavor_version<T>(versions: Vec<T>) -> T
+pub fn select_flavor_version<T>(versions: Vec<T>) -> Result<T>
 where
   T: Clone + fmt::Display,
 {
@@ -15,7 +16,7 @@ where
     "Esc to cancel",
   ) {
     Ok(ans) => {
-      return ans;
+      return color_eyre::eyre::Ok(ans);
     }
     Err(e) => match e {
       InquireError::NotTTY => {
@@ -52,14 +53,14 @@ where
 
 // Special versions e.g. Fabric installer
 
-pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> &str {
+pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> Result<&str> {
   match single_choice(
     installer_versions.clone(),
     "Which Fabric Installer do you want to use?",
     "Esc to cancel",
   ) {
     Ok(ans) => {
-      return ans;
+      return color_eyre::eyre::Ok(ans);
     }
     Err(e) => match e {
       InquireError::NotTTY => {
@@ -87,9 +88,9 @@ pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> &str {
       }
     },
   }
-  single_choice_fallback(
+  color_eyre::eyre::Ok(single_choice_fallback(
     installer_versions,
     "Which Fabric Installer do you want to use?",
     "Leave empty to cancel",
-  )
+  )?)
 }

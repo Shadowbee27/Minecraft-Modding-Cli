@@ -1,5 +1,6 @@
+use color_eyre::eyre::{Ok, Result, eyre};
 use inquire::{InquireError, Select};
-use std::{io, process::exit};
+use std::io;
 
 pub fn single_choice<T: std::fmt::Display>(
   list: Vec<T>,
@@ -15,7 +16,7 @@ pub fn single_choice_fallback<T: std::fmt::Display + Clone>(
   list: Vec<T>,
   question: &str,
   help_msg: &str,
-) -> T {
+) -> Result<T> {
   loop {
     println!("{}", question);
     for option in &list {
@@ -29,12 +30,12 @@ pub fn single_choice_fallback<T: std::fmt::Display + Clone>(
 
     answ = answ.trim().to_lowercase();
     if answ.is_empty() {
-      println!("Action canceled by user");
-      exit(1)
+      return Err(eyre!("Action canceled by user"));
     }
+
     for option in &list {
       if answ == option.to_string().to_lowercase() {
-        return option.clone();
+        return Ok(option.clone());
       }
     }
     eprintln!("Unknown option");

@@ -1,7 +1,7 @@
 use clap::clap_derive::*;
-use colorful::{Color, Colorful};
+use color_eyre::eyre::{Context, Ok, Result, eyre};
 use std::fs::{create_dir_all, exists};
-use std::{path::PathBuf, process::exit};
+use std::path::PathBuf;
 
 use crate::config::{CONFIG_VERSION, ProjectConfig};
 use crate::software::ServerSoftware;
@@ -20,13 +20,12 @@ struct ServerDir<'a> {
   creation_error: &'a str,
 }
 
-pub fn create_new_server(args: CreateNewArgs) {
-  if exists(&args.name).unwrap() {
-    println!("Directory is not empty, please use init");
-    exit(1);
+pub fn create_new_server(args: CreateNewArgs) -> Result<()> {
+  if exists(&args.name)? {
+    return Err(eyre!("Directory is not empty, please use init"));
   }
 
-  let mut server_software: ServerSoftware = server_software_selector();
+  let mut server_software: ServerSoftware = server_software_selector()?;
 
   let modding_folder = server_software.get_moddification_dir();
 
@@ -57,36 +56,24 @@ pub fn create_new_server(args: CreateNewArgs) {
   }
 
   for dir in dirs_to_create {
-    match create_dir_all(dir.dir) {
-      Ok(_) => {}
-      Err(e) => eprintln!(
-        "{} ({})",
-        dir.creation_error,
-        e.to_string().color(Color::Red).bold()
-      ),
-    }
+    create_dir_all(dir.dir).wrap_err_with(|| dir.creation_error.to_string())?;
   }
 
   let project_config = ProjectConfig {
     config_version: CONFIG_VERSION,
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
-    mc_version: minecraft_version.clone(),
+    mc_version: minecraft_version?.clone(),
     jar_file: String::new(),
   };
 
-  match project_config.save(&args.name) {
-    Ok(_) => {}
-    Err(e) => {
-      eprintln!(
-        "Error while saving config file: ({})",
-        e.to_string().color(Color::Red).bold()
-      );
-      exit(1)
-    }
-  };
+  project_config
+    .save(&args.name)
+    .wrap_err("Error while saving project-config file")?;
 
-  server_software.install(project_config, &args.name);
+  server_software.install(project_config, &args.name)?;
 
   println!("Success, new server created");
+
+  Ok(())
 }
