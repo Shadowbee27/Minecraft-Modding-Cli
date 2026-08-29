@@ -104,7 +104,7 @@ impl SeverSoftware for Quilt {
       .spawn()?;
 
     println!("----- Quilt Installer output -----");
-    cmd.wait_with_output().expect("Failed to wait for output");
+    cmd.wait_with_output()?;
     println!("----- Quilt Installer output end -----");
 
     Ok(())

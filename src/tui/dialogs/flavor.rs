@@ -16,7 +16,7 @@ where
     "Esc to cancel",
   ) {
     Ok(ans) => {
-      return color_eyre::eyre::Ok(ans);
+      return Ok(ans);
     }
     Err(e) => match e {
       InquireError::NotTTY => {

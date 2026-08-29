@@ -20,6 +20,7 @@ pub struct NeoForge {
 
 impl SeverSoftware for NeoForge {
   fn install(&mut self, _pconf: ProjectConfig, _pdir: &Path) -> Result<()> {
+    //https://maven.neoforged.net/releases/net/neoforged/neoforge/26.2.0.72/neoforge-26.2.0.72-installer.jar
     unimplemented!()
   }
 
