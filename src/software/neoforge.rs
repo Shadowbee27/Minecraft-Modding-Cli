@@ -1,15 +1,18 @@
 use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
 use regex::Regex;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::Path;
+use std::process::Command;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
-use super::SupportedVersion;
+use super::{SeverSoftware, SupportedVersion};
+use crate::common::download::download_file;
 use crate::common::maven::get_versions as get_maven_versions;
 use crate::config::ProjectConfig;
+use crate::software::McVersion;
+use crate::tui::dialogs::flavor::select_flavor_version;
 
 const NEOFORGE_URL: &str = "https://maven.neoforged.net/releases";
 
@@ -19,9 +22,46 @@ pub struct NeoForge {
 }
 
 impl SeverSoftware for NeoForge {
-  fn install(&mut self, _pconf: ProjectConfig, _pdir: &Path) -> Result<()> {
-    //https://maven.neoforged.net/releases/net/neoforged/neoforge/26.2.0.72/neoforge-26.2.0.72-installer.jar
-    unimplemented!()
+  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    let neoforge_version =
+      select_flavor_version(get_neo_version_for_mc_version(&pconf.mc_version)?)?; // TODO: only one neoforge version is being returned, use vec instead of hashmap
+
+    // https://maven.neoforged.net/releases/net/neoforged/neoforge/26.2.0.72/neoforge-26.2.0.72-installer.jar
+    let url = format!(
+      "{}/net/neoforged/neoforge/{}/neoforge-{}-installer.jar",
+      NEOFORGE_URL, neoforge_version, neoforge_version
+    );
+    let download_path = format!(
+      "{}/neoforge-{}-installer.jar",
+      pdir
+        .to_str()
+        .ok_or_eyre("Failed to convert path to string")?,
+      neoforge_version
+    );
+
+    Runtime::new()?.block_on(download_file(
+      &Client::new(),
+      url.as_str(),
+      download_path.as_str(),
+    ))?;
+
+    // java -jar test_server/neoforge-26.2-65.1.3-installer.jar --installServer test_server
+    let cmd = Command::new("java")
+      .args([
+        "-jar",
+        &download_path,
+        "--installServer",
+        pdir
+          .to_str()
+          .ok_or_eyre("Failed to convert path to string")?,
+      ])
+      .spawn()?;
+
+    println!("----- NeoForge Installer output -----");
+    cmd.wait_with_output()?;
+    println!("----- NeoForge Installer output end -----");
+
+    Ok(())
   }
 
   fn update(&mut self) -> Result<()> {
@@ -29,9 +69,15 @@ impl SeverSoftware for NeoForge {
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
-    let neo_versions = get_neoforge_versions()?;
+    let versions = get_neoforge_versions()?;
 
-    convert_neo_maven_version(neo_versions)
+    let mut neoversions: Vec<SupportedVersion> = convert_neo_maven_version(versions)?
+      .iter()
+      .map(|v| v.0.clone())
+      .collect();
+    neoversions.dedup();
+
+    Ok(neoversions)
   }
 }
 
@@ -41,10 +87,10 @@ fn get_neoforge_versions() -> Result<Vec<String>> {
   Ok(meta.versioning.versions.list)
 }
 
-fn convert_neo_maven_version(neo_versions: Vec<String>) -> Result<Vec<SupportedVersion>> {
+fn convert_neo_maven_version(neo_versions: Vec<String>) -> Result<Vec<(SupportedVersion, String)>> {
   // This was done with help with AI
   let re = Regex::new(r"^(\d+)\.(\d+)(?:\.(\d+))?").unwrap();
-  let mut supported_version: HashMap<SupportedVersion, String> = HashMap::new();
+  let mut supported_version: Vec<(SupportedVersion, String)> = Vec::new();
 
   for ver in neo_versions {
     if let Some(caps) = re.captures(ver.as_str()) {
@@ -96,14 +142,28 @@ fn convert_neo_maven_version(neo_versions: Vec<String>) -> Result<Vec<SupportedV
         }
       };
 
-      supported_version.entry(mc_version.clone()).or_insert(ver);
+      supported_version.push((mc_version, ver));
     }
   }
 
-  let mut mc_versions = Vec::new();
-  for (mc_ver, _) in supported_version {
-    mc_versions.push(mc_ver);
+  supported_version.sort();
+  supported_version.dedup();
+
+  Ok(supported_version)
+}
+
+fn get_neo_version_for_mc_version(mc_version: &McVersion) -> Result<Vec<String>> {
+  let neo_versions = get_neoforge_versions()?;
+
+  let versions = convert_neo_maven_version(neo_versions)?;
+
+  let mut neo_versions = Vec::new();
+  for (mc_ver, neo_ver) in versions {
+    if mc_ver.version == mc_version.0 {
+      neo_versions.push(neo_ver);
+    }
   }
-  mc_versions.sort();
-  Ok(mc_versions)
+  neo_versions.reverse();
+
+  Ok(neo_versions)
 }

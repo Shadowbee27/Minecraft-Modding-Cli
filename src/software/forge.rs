@@ -2,7 +2,6 @@ use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
 use rayon::prelude::*;
 use reqwest::Client;
-use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
@@ -27,19 +26,19 @@ impl SeverSoftware for Forge {
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let forge_version =
       select_flavor_version(get_forge_versions_for_mc_version(&pconf.mc_version)?)?;
-    let forge_version = format!("{}-{}", &pconf.mc_version.clone().0, forge_version);
+    let forge_version = format!("{}-{}", pconf.mc_version.clone().0, forge_version);
 
     // https://maven.minecraftforge.net/net/minecraftforge/forge/26.2-65.1.3/forge-26.2-65.1.3-installer.jar
     let url = format!(
       "https://maven.minecraftforge.net/net/minecraftforge/forge/{}/forge-{}-installer.jar",
-      &forge_version, &forge_version
+      forge_version, forge_version
     );
     let download_path = format!(
       "{}/forge-{}-installer.jar",
-      &pdir
+      pdir
         .to_str()
         .ok_or_eyre("Failed to convert path to string")?,
-      &forge_version
+      forge_version
     );
 
     Runtime::new()?.block_on(download_file(
@@ -54,7 +53,7 @@ impl SeverSoftware for Forge {
         "-jar",
         &download_path,
         "--installServer",
-        &pdir
+        pdir
           .to_str()
           .ok_or_eyre("Failed to convert path to string")?,
       ])
