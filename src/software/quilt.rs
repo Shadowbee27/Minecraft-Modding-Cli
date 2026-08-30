@@ -1,4 +1,7 @@
-use color_eyre::eyre::{ContextCompat, OptionExt, Result};
+use color_eyre::{
+  Result,
+  eyre::{ContextCompat, OptionExt},
+};
 use rayon::prelude::*;
 use reqwest::blocking::Client;
 use semver::Version;

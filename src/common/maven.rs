@@ -1,5 +1,7 @@
+use color_eyre::Result;
 use quick_xml::de::from_str;
 use reqwest::Client;
+use reqwest::header;
 use serde::Deserialize;
 
 // Structs were created with AI
@@ -32,12 +34,21 @@ pub struct VersionsList {
 pub async fn get_versions<T: std::fmt::Display, G: std::fmt::Display>(
   group_id: T,
   base_url: G,
-) -> color_eyre::Result<MavenMetadata> {
+) -> Result<MavenMetadata> {
   let fetch_url = format!("{base_url}/{group_id}/maven-metadata.xml");
   dbg!(&fetch_url);
-  let client = Client::new();
+  let mut headers = header::HeaderMap::new();
+  headers.insert(
+    header::CONTENT_TYPE,
+    header::HeaderValue::from_static("text/html"),
+  );
+  let client = Client::builder()
+    .default_headers(headers)
+    .user_agent("curl/7.54.1")
+    .build()?;
   let result = client.get(fetch_url).send().await?;
   let raw = result.text().await?;
+  dbg!(&raw);
   let meta: MavenMetadata = from_str(&raw)?;
   dbg!(&meta);
   Ok(meta)
@@ -69,5 +80,19 @@ mod tests {
       "https://maven.neoforged.net/releases",
     ))
     .unwrap();
+  }
+
+  #[test]
+  fn get_spiggot_bukkit_meta() -> Result<()> {
+    color_eyre::install()?;
+    let rt = Runtime::new().unwrap();
+
+    rt.block_on(get_versions(
+      "org/spigotmc/spigot-api",
+      "https://hub.spigotmc.org/nexus/repository/public",
+    ))
+    .unwrap();
+
+    Ok(())
   }
 }

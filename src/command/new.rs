@@ -1,5 +1,8 @@
 use clap::clap_derive::*;
-use color_eyre::eyre::{Context, Ok, Result, eyre};
+use color_eyre::{
+  Result,
+  eyre::{Context, eyre},
+};
 use std::fs::{create_dir_all, exists};
 use std::path::PathBuf;
 

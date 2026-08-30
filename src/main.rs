@@ -1,5 +1,8 @@
 use clap::*;
-use color_eyre::eyre::{Context, Ok, Result, eyre};
+use color_eyre::{
+  Result,
+  eyre::{Context, eyre},
+};
 use std::fs::{exists, read_to_string};
 
 use crate::command::{init, new};

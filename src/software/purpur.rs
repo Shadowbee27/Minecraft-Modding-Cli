@@ -1,4 +1,4 @@
-use color_eyre::eyre::Result;
+use color_eyre::Result;
 use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;

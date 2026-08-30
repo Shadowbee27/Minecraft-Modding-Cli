@@ -1,5 +1,4 @@
-use color_eyre::eyre::OptionExt;
-use color_eyre::eyre::Result;
+use color_eyre::{Result, eyre::OptionExt};
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -24,7 +23,7 @@ pub struct NeoForge {
 impl SeverSoftware for NeoForge {
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let neoforge_version =
-      select_flavor_version(get_neo_version_for_mc_version(&pconf.mc_version)?)?; // TODO: only one neoforge version is being returned, use vec instead of hashmap
+      select_flavor_version(get_neo_version_for_mc_version(&pconf.mc_version)?)?;
 
     // https://maven.neoforged.net/releases/net/neoforged/neoforge/26.2.0.72/neoforge-26.2.0.72-installer.jar
     let url = format!(

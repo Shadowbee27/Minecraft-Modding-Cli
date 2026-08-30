@@ -1,5 +1,4 @@
-use color_eyre::eyre::OptionExt;
-use color_eyre::eyre::Result;
+use color_eyre::{Result, eyre::OptionExt};
 use rayon::prelude::*;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

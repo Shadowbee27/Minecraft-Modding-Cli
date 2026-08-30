@@ -1,5 +1,5 @@
 use crate::tui::dialogs::flavor::select_flavor_version;
-use color_eyre::eyre::Result;
+use color_eyre::Result;
 use colorful::{Color, Colorful};
 use rayon::prelude::*;
 use reqwest::Client as AClient;

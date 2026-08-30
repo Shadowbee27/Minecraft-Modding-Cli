@@ -1,4 +1,4 @@
-use color_eyre::eyre::{Ok, Result, eyre};
+use color_eyre::{Result, eyre::eyre};
 use inquire::{InquireError, Select};
 use std::io;
 

@@ -1,4 +1,4 @@
-use color_eyre::eyre::Result;
+use color_eyre::Result;
 use colorful::{Color, Colorful};
 use inquire::InquireError;
 use std::process::exit;

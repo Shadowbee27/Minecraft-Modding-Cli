@@ -1,4 +1,4 @@
-use color_eyre::eyre::Result;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, path::Path};
 use strum::EnumIter;
@@ -12,6 +12,7 @@ use crate::{
   },
 };
 
+mod buildtools;
 pub mod bukkit;
 pub mod fabric;
 pub mod folia;
@@ -25,8 +26,8 @@ pub mod spiggot;
 pub mod vanilla;
 
 // Unlikely to be supported: Sponge, Babric, BTA (Babric), Java agent, liteloader RisugamisModLoader, Nil loader, Ornithe, Rift
-// Todo: bukkit, spiggot
-// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge
+// Todo:
+// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge, bukkit, spiggot
 // update done:
 #[derive(Debug, Clone, Deserialize, Serialize, EnumIter)]
 pub enum ServerSoftware {
@@ -134,12 +135,12 @@ impl ServerSoftware {
       Self::FORGE(f) => f.flavor_version.to_string(),
       Self::NEOFORGE(n) => n.flavor_version.to_string(),
       Self::PAPER(p) => p.flavor_version.to_string(),
-      Self::BUKKIT(b) => b.flavor_version.to_string(),
+      Self::BUKKIT(_) => String::new(),
       Self::QUILT(_) => String::new(),
       Self::VANILLA(v) => v.flavor_version.to_string(),
       Self::LegacyFabric(l) => l.flavor_version.to_string(),
       Self::PURPUR(p) => p.flavor_version,
-      Self::SPIGGOT(s) => s.flavor_version.to_string(),
+      Self::SPIGGOT(_) => String::new(),
     }
   }
 }
