@@ -6,10 +6,13 @@ use color_eyre::{
 use std::fs::{create_dir_all, exists};
 use std::path::PathBuf;
 
-use crate::config::{CONFIG_VERSION, ProjectConfig};
 use crate::software::ServerSoftware;
 use crate::tui::dialogs::minecraft::mc_version_select;
 use crate::tui::dialogs::software::server_software_selector;
+use crate::{
+  common::get_current_full_dir,
+  config::{CONFIG_VERSION, ProjectConfig},
+};
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
@@ -23,7 +26,8 @@ struct ServerDir<'a> {
   creation_error: &'a str,
 }
 
-pub fn create_new_server(args: CreateNewArgs) -> Result<()> {
+pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
+  args.name = get_current_full_dir()?.join(args.name); // use full instedt of relitiv path
   if exists(&args.name)? {
     return Err(eyre!("Directory is not empty, please use init"));
   }

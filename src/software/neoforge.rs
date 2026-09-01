@@ -1,4 +1,6 @@
+use color_eyre::eyre::eyre;
 use color_eyre::{Result, eyre::OptionExt};
+use colorful::{Color, Colorful};
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -56,10 +58,17 @@ impl SeverSoftware for NeoForge {
       ])
       .spawn()?;
 
-    println!("----- NeoForge Installer output -----");
-    cmd.wait_with_output()?;
-    println!("----- NeoForge Installer output end -----");
+    println!("----- NeoForge NeoForge-Installer output -----");
+    let result = cmd.wait_with_output()?;
 
+    let eoo = "----End of NeoForge-Installer output----";
+
+    if !result.status.success() {
+      println!("{}", eoo.color(Color::Red).bold());
+      return Err(eyre!("Failed to run NeoForge-Installer, {}", result.status));
+    }
+
+    println!("{}", eoo.color(Color::Green).bold());
     Ok(())
   }
 

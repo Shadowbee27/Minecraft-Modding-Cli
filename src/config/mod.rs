@@ -4,6 +4,8 @@ use std::{fs, path::Path};
 
 use super::software::{McVersion, ServerSoftware};
 
+pub mod global_conf;
+
 pub const CONFIG_PATH: &str = ".mcmc/config.toml";
 pub const CONFIG_VERSION: Version = Version {
   major: 0,

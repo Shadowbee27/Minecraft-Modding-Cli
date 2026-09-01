@@ -1,4 +1,6 @@
+use color_eyre::eyre::eyre;
 use color_eyre::{Result, eyre::OptionExt};
+use colorful::{Color, Colorful};
 use rayon::prelude::*;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -58,10 +60,17 @@ impl SeverSoftware for Forge {
       ])
       .spawn()?;
 
-    println!("----- Forge Installer output -----");
-    cmd.wait_with_output()?;
-    println!("----- Forge Installer output end -----");
+    println!("----- Forge-Installer output -----");
+    let result = cmd.wait_with_output()?;
 
+    let eoo = "----End of Forge-Installer output----";
+
+    if !result.status.success() {
+      println!("{}", eoo.color(Color::Red).bold());
+      return Err(eyre!("Failed to run Forge-Installer, {}", result.status));
+    }
+
+    println!("{}", eoo.color(Color::Red).bold());
     Ok(())
   }
 

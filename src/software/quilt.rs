@@ -1,7 +1,8 @@
 use color_eyre::{
   Result,
-  eyre::{ContextCompat, OptionExt},
+  eyre::{ContextCompat, OptionExt, eyre},
 };
+use colorful::{Color, Colorful};
 use rayon::prelude::*;
 use reqwest::blocking::Client;
 use semver::Version;
@@ -106,10 +107,16 @@ impl SeverSoftware for Quilt {
       ])
       .spawn()?;
 
-    println!("----- Quilt Installer output -----");
-    cmd.wait_with_output()?;
-    println!("----- Quilt Installer output end -----");
+    println!("----- Quilt-Installer output -----");
+    let result = cmd.wait_with_output()?;
 
+    let eoo = "----End of Quilt-Installer output----";
+    if !result.status.success() {
+      println!("{}", eoo.color(Color::Red).bold());
+      return Err(eyre!("Failed to run Quilt-Installer, {}", result.status));
+    }
+
+    println!("{}", eoo.color(Color::Green).bold());
     Ok(())
   }
 
