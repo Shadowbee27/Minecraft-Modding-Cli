@@ -8,5 +8,9 @@ pub struct InitArgs {
 }
 
 pub fn init_dir(_args: InitArgs) {
+  // scan for serversoftware
+  // index mods
+  // create mods
+
   todo!()
 }

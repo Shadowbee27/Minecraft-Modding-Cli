@@ -6,12 +6,13 @@ use strum::EnumIter;
 use crate::{
   config::ProjectConfig,
   software::{
-    bukkit::Bukkit, fabric::Fabric, folia::Folia, forge::Forge, legacy_fabric::LegacyFabric,
-    neoforge::NeoForge, paper::Paper, purpur::Purpur, quilt::Quilt, spiggot::Spiggot,
-    vanilla::Vanilla,
+    babric::Babric, bukkit::Bukkit, fabric::Fabric, folia::Folia, forge::Forge,
+    legacy_fabric::LegacyFabric, neoforge::NeoForge, paper::Paper, purpur::Purpur, quilt::Quilt,
+    spiggot::Spiggot, vanilla::Vanilla,
   },
 };
 
+pub mod babric;
 mod buildtools;
 pub mod bukkit;
 pub mod fabric;
@@ -25,9 +26,9 @@ pub mod quilt;
 pub mod spiggot;
 pub mod vanilla;
 
-// Unlikely to be supported: Sponge, Babric, BTA (Babric), Java agent, liteloader RisugamisModLoader, Nil loader, Ornithe, Rift
+// Unlikely to be supported: Sponge, Java agent, liteloader, RisugamisModLoader, Nil loader, Ornithe, Rift
 // Todo:
-// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge, bukkit, spiggot
+// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge, bukkit, spiggot, Babric
 // update done:
 #[derive(Debug, Clone, Deserialize, Serialize, EnumIter)]
 pub enum ServerSoftware {
@@ -42,6 +43,7 @@ pub enum ServerSoftware {
   QUILT(Quilt),
   SPIGGOT(Spiggot),
   VANILLA(Vanilla),
+  BABRIC(Babric),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -79,6 +81,7 @@ impl ServerSoftware {
       Self::LegacyFabric(_) => LegacyFabric::get_supported_minecraft_versions(),
       Self::PURPUR(_) => Purpur::get_supported_minecraft_versions(),
       Self::SPIGGOT(_) => Spiggot::get_supported_minecraft_versions(),
+      Self::BABRIC(_) => Babric::get_supported_minecraft_versions(),
     }
   }
 
@@ -95,6 +98,7 @@ impl ServerSoftware {
       Self::LegacyFabric(_) => "Legacy Fabric",
       Self::PURPUR(_) => "Purpur",
       Self::SPIGGOT(_) => "Spiggot",
+      Self::BABRIC(_) => "Babric",
     }
   }
   pub fn install(&mut self, project_config: ProjectConfig, server_dir: &Path) -> Result<()> {
@@ -110,6 +114,7 @@ impl ServerSoftware {
       Self::LegacyFabric(l) => l.install(project_config, server_dir),
       Self::PURPUR(p) => p.install(project_config, server_dir),
       Self::SPIGGOT(s) => s.install(project_config, server_dir),
+      Self::BABRIC(b) => b.install(project_config, server_dir),
     }
   }
 
@@ -119,6 +124,7 @@ impl ServerSoftware {
       | Self::FORGE(_)
       | Self::NEOFORGE(_)
       | Self::QUILT(_)
+      | Self::BABRIC(_)
       | Self::LegacyFabric(_) => Some("mods/"),
       Self::FOLIA(_) | Self::PAPER(_) | Self::BUKKIT(_) | Self::SPIGGOT(_) | Self::PURPUR(_) => {
         Some("plugins/")
@@ -141,6 +147,7 @@ impl ServerSoftware {
       Self::LegacyFabric(l) => l.flavor_version.to_string(),
       Self::PURPUR(p) => p.flavor_version,
       Self::SPIGGOT(_) => String::new(),
+      Self::BABRIC(b) => b.flavor_version.to_string(),
     }
   }
 }
@@ -159,6 +166,7 @@ impl Display for ServerSoftware {
       Self::LegacyFabric(_) => write!(f, "Legacy Fabric"),
       Self::PURPUR(_) => write!(f, "Purpur"),
       Self::SPIGGOT(_) => write!(f, "Spiggot"),
+      Self::BABRIC(_) => write!(f, "Babric"),
     }
   }
 }
