@@ -1,20 +1,17 @@
-use crate::tui::dialogs::flavor::select_flavor_version;
 use color_eyre::Result;
 use colorful::{Color, Colorful};
 use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fmt;
-use std::path::Path;
-use std::process::exit;
+use std::{collections::HashMap, fmt, path::Path, process::exit};
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
-use super::SupportedVersion;
+use super::{SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
 use crate::config::ProjectConfig;
+use crate::software::McVersion;
+use crate::tui::dialogs::flavor::select_flavor_version;
 
 const FOLIA_URL: &str = "https://fill.papermc.io/v3/projects/folia";
 
@@ -32,18 +29,7 @@ pub struct Folia {
 
 impl SeverSoftware for Folia {
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let builds = match get_builds(&pconf.mc_version.0) {
-      Ok(b) => b,
-      Err(e) => {
-        eprintln!(
-          "Error getting build metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
-
+    self.get_self_versions(&pconf.mc_version)?;
     let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
     let file_path = format!(
       "folia-server-mc{}-build{}.jar",
@@ -93,6 +79,25 @@ impl SeverSoftware for Folia {
     }
 
     Ok(versions_vec)
+  }
+
+  fn get_self_versions(&mut self, mc_version: &McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    let builds = match get_builds(&mc_version.0) {
+      Ok(b) => b,
+      Err(e) => {
+        eprintln!(
+          "Error getting build metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
+
+    Ok(())
   }
 }
 
@@ -164,5 +169,10 @@ mod tests {
   #[test]
   fn folia_supported_version() {
     dbg!(Folia::get_supported_minecraft_versions().unwrap());
+  }
+
+  #[test]
+  fn test_get_builds() {
+    dbg!(get_builds("26.2").unwrap());
   }
 }

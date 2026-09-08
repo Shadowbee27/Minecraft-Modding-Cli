@@ -8,7 +8,7 @@ use std::path::Path;
 use std::process::Command;
 use tokio::runtime::Runtime;
 
-use super::{SeverSoftware, SupportedVersion};
+use super::{ServerSoftware, SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
 use crate::common::maven::get_versions as get_maven_versions;
 use crate::config::ProjectConfig;
@@ -23,40 +23,39 @@ pub struct NeoForge {
 }
 
 impl SeverSoftware for NeoForge {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let neoforge_version =
-      select_flavor_version(get_neo_version_for_mc_version(&pconf.mc_version)?)?;
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    self.get_self_versions(&pconf.mc_version)?;
 
     // https://maven.neoforged.net/releases/net/neoforged/neoforge/26.2.0.72/neoforge-26.2.0.72-installer.jar
     let url = format!(
       "{}/net/neoforged/neoforge/{}/neoforge-{}-installer.jar",
-      NEOFORGE_URL, neoforge_version, neoforge_version
+      NEOFORGE_URL, self.flavor_version, self.flavor_version
     );
-    let download_path = format!(
+    pconf.jar_file = format!(
       "{}/neoforge-{}-installer.jar",
       pdir
         .to_str()
         .ok_or_eyre("Failed to convert path to string")?,
-      neoforge_version
+      self.flavor_version
     );
 
-    Runtime::new()?.block_on(download_file(
-      &Client::new(),
-      url.as_str(),
-      download_path.as_str(),
-    ))?;
+    Runtime::new()?.block_on(download_file(&Client::new(), url.as_str(), &pconf.jar_file))?;
 
     // java -jar test_server/neoforge-26.2-65.1.3-installer.jar --installServer test_server
     let cmd = Command::new("java")
       .args([
         "-jar",
-        &download_path,
+        &pconf.jar_file,
         "--installServer",
         pdir
           .to_str()
           .ok_or_eyre("Failed to convert path to string")?,
       ])
       .spawn()?;
+
+    pconf.flavor_version = self.flavor_version.clone();
+    pconf.flavor = ServerSoftware::NEOFORGE(self.clone());
+    pconf.save(pdir)?;
 
     println!("----- NeoForge NeoForge-Installer output -----");
     let result = cmd.wait_with_output()?;
@@ -84,8 +83,17 @@ impl SeverSoftware for NeoForge {
       .map(|v| v.0.clone())
       .collect();
     neoversions.dedup();
+    neoversions.reverse();
 
     Ok(neoversions)
+  }
+
+  fn get_self_versions(&mut self, mc_version: &McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    self.flavor_version = select_flavor_version(get_neo_version_for_mc_version(mc_version)?)?;
+    Ok(())
   }
 }
 

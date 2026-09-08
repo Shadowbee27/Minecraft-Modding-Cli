@@ -11,7 +11,7 @@ use crate::tui::dialogs::minecraft::mc_version_select;
 use crate::tui::dialogs::software::server_software_selector;
 use crate::{
   common::get_current_full_dir,
-  config::{CONFIG_VERSION, ProjectConfig},
+  config::{PROJECT_CONFIG_VERSION, ProjectConfig},
 };
 
 #[derive(Parser, Debug, Clone)]
@@ -67,7 +67,7 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
   }
 
   let project_config = ProjectConfig {
-    config_version: CONFIG_VERSION,
+    config_version: PROJECT_CONFIG_VERSION,
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
     mc_version: minecraft_version?.clone(),

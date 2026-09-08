@@ -65,6 +65,12 @@ pub trait SeverSoftware {
   fn update(&mut self) -> Result<()>;
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()>;
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>>;
+  fn get_self_versions(&mut self, _mc_version: &McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    Ok(())
+  }
 }
 
 impl ServerSoftware {
@@ -119,7 +125,7 @@ impl ServerSoftware {
   }
 
   pub fn get_moddification_dir(&self) -> Option<&str> {
-    let dir: Option<&str> = match self {
+    match &self {
       Self::FABRIC(_)
       | Self::FORGE(_)
       | Self::NEOFORGE(_)
@@ -130,8 +136,7 @@ impl ServerSoftware {
         Some("plugins/")
       }
       Self::VANILLA(_) => None,
-    };
-    dir
+    }
   }
 
   pub fn get_flavor_version(self) -> String {
@@ -149,6 +154,25 @@ impl ServerSoftware {
       Self::SPIGGOT(_) => String::new(),
       Self::BABRIC(b) => b.flavor_version.to_string(),
     }
+  }
+
+  pub fn set_flavor_version(&mut self, mc_version: &McVersion) -> Result<()> {
+    match self {
+      Self::FABRIC(f) => f.get_self_versions(mc_version)?,
+      Self::FOLIA(f) => f.get_self_versions(mc_version)?,
+      Self::FORGE(f) => f.get_self_versions(mc_version)?,
+      Self::NEOFORGE(n) => n.get_self_versions(mc_version)?,
+      Self::PAPER(p) => p.get_self_versions(mc_version)?,
+      Self::BUKKIT(b) => b.get_self_versions(mc_version)?,
+      Self::QUILT(q) => q.get_self_versions(mc_version)?,
+      Self::VANILLA(v) => v.get_self_versions(mc_version)?,
+      Self::LegacyFabric(l) => l.get_self_versions(mc_version)?,
+      Self::PURPUR(p) => p.get_self_versions(mc_version)?,
+      Self::SPIGGOT(s) => s.get_self_versions(mc_version)?,
+      Self::BABRIC(b) => b.get_self_versions(mc_version)?,
+    }
+
+    Ok(())
   }
 }
 

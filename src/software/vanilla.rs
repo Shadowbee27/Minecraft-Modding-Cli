@@ -9,6 +9,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::common::download::download_file;
 use crate::config::ProjectConfig;
+use crate::tui::dialogs::minecraft::mc_version_select;
 
 const VANILLA_URL: &str = "https://piston-meta.mojang.com/mc/game/version_manifest.json";
 
@@ -103,6 +104,14 @@ impl SeverSoftware for Vanilla {
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
     Ok(get_vanilla_metadata()?.to_supported_version())
+  }
+
+  fn get_self_versions(&mut self, _mc_version: &super::McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    self.flavor_version = mc_version_select(&super::ServerSoftware::VANILLA(Vanilla::default()))?.0;
+    Ok(())
   }
 }
 

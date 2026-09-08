@@ -5,6 +5,7 @@
 [
   {
     "label": "Run new",
+    "coreConfigs": [],
     "adapter": "probe-rs",
     "program": "mcmc",
     "request": "launch",
@@ -12,5 +13,16 @@
       "command": "cargo",
       "args": ["run", "--", "new", "test-server"]
     }
+  },
+  {
+  "label": "Run init",
+  "coreConfigs": [],
+  "adapter": "probe-rs",
+  "program": "mcmc",
+  "request": "launch",
+  "build": {
+    "command": "cargo",
+    "args": ["run", "--", "init", "testing/test-init"]
   }
+}
 ]

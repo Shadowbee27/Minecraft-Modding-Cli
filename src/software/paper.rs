@@ -30,9 +30,7 @@ pub struct Paper {
 
 impl SeverSoftware for Paper {
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let builds = get_builds(&pconf.mc_version.0)?;
-
-    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
+    self.get_self_versions(&pconf.mc_version)?;
 
     let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
 
@@ -83,7 +81,20 @@ impl SeverSoftware for Paper {
       }
     }
 
+    versions_vec.sort();
+    versions_vec.reverse();
     Ok(versions_vec)
+  }
+
+  fn get_self_versions(&mut self, mc_version: &super::McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    let builds = get_builds(&mc_version.0)?;
+
+    self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
+
+    Ok(())
   }
 }
 

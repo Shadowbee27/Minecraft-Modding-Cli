@@ -69,33 +69,7 @@ impl Default for LegacyFabric {
 
 impl SeverSoftware for LegacyFabric {
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let info = match get_fabric_info() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
-
-    self.flavor_version = Version::parse(flavor::select_flavor_version(
-      info
-        .loader_version
-        .par_iter()
-        .map(|v| v.version.as_str())
-        .collect(),
-    )?)?;
-
-    self.installer_version = Version::parse(flavor::select_fabric_installer_version(
-      info
-        .installer_version
-        .par_iter()
-        .map(|v| v.version.as_str())
-        .collect(),
-    )?)?;
-
+    self.get_self_versions(&pconf.mc_version)?;
     let client = AClient::new();
     // BSP: https://meta.fabricmc.net/v2/versions/loader/26.2/0.19.3/0.8.0/server/jar
     let download_url = format!(
@@ -151,6 +125,40 @@ impl SeverSoftware for LegacyFabric {
         .map(|v| v.to_supported_version())
         .collect(),
     )
+  }
+
+  fn get_self_versions(&mut self, _mc_version: &super::McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    let info = match get_fabric_info() {
+      Ok(meta) => meta,
+      Err(e) => {
+        eprintln!(
+          "Error getting Metadata: {}",
+          e.to_string().color(Color::Red).bold()
+        );
+        exit(1)
+      }
+    };
+
+    self.flavor_version = Version::parse(flavor::select_flavor_version(
+      info
+        .loader_version
+        .par_iter()
+        .map(|v| v.version.as_str())
+        .collect(),
+    )?)?;
+
+    self.installer_version = Version::parse(flavor::select_fabric_installer_version(
+      info
+        .installer_version
+        .par_iter()
+        .map(|v| v.version.as_str())
+        .collect(),
+    )?)?;
+
+    Ok(())
   }
 }
 

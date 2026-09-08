@@ -59,9 +59,7 @@ pub struct Purpur {
 
 impl SeverSoftware for Purpur {
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let info = get_purpur_versions(&pconf.mc_version.0)?;
-    self.flavor_version =
-      select_flavor_version(info.to_vec().par_iter().map(|v| v.as_str()).collect())?.to_string();
+    self.get_self_versions(&pconf.mc_version)?;
 
     let download_url = format!(
       "{}/{}/{}/download",
@@ -97,6 +95,16 @@ impl SeverSoftware for Purpur {
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
     Ok(get_purpur_mc_versions()?.to_supported_version())
+  }
+
+  fn get_self_versions(&mut self, mc_version: &super::McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    let info = get_purpur_versions(&mc_version.0)?;
+    self.flavor_version =
+      select_flavor_version(info.to_vec().par_iter().map(|v| v.as_str()).collect())?.to_string();
+    Ok(())
   }
 }
 

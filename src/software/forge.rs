@@ -13,7 +13,7 @@ use super::SupportedVersion;
 use crate::common::download::download_file;
 use crate::common::maven::get_versions;
 use crate::config::ProjectConfig;
-use crate::software::McVersion;
+use crate::software::{McVersion, ServerSoftware};
 use crate::tui::dialogs::flavor::select_flavor_version;
 
 const FORGE_URL: &str = "https://maven.minecraftforge.net/releases";
@@ -24,41 +24,41 @@ pub struct Forge {
 }
 
 impl SeverSoftware for Forge {
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
-    let forge_version =
-      select_flavor_version(get_forge_versions_for_mc_version(&pconf.mc_version)?)?;
-    let forge_version = format!("{}-{}", pconf.mc_version.clone().0, forge_version);
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+    self.get_self_versions(&pconf.mc_version)?;
+
+    self.flavor_version = format!("{}-{}", pconf.mc_version.clone().0, self.flavor_version);
 
     // https://maven.minecraftforge.net/net/minecraftforge/forge/26.2-65.1.3/forge-26.2-65.1.3-installer.jar
     let url = format!(
       "https://maven.minecraftforge.net/net/minecraftforge/forge/{}/forge-{}-installer.jar",
-      forge_version, forge_version
+      self.flavor_version, self.flavor_version
     );
-    let download_path = format!(
+    pconf.jar_file = format!(
       "{}/forge-{}-installer.jar",
       pdir
         .to_str()
         .ok_or_eyre("Failed to convert path to string")?,
-      forge_version
+      self.flavor_version
     );
 
-    Runtime::new()?.block_on(download_file(
-      &Client::new(),
-      url.as_str(),
-      download_path.as_str(),
-    ))?;
+    Runtime::new()?.block_on(download_file(&Client::new(), url.as_str(), &pconf.jar_file))?;
 
     // java -jar test_server/forge-26.2-65.1.3-installer.jar --installServer test_server
     let cmd = Command::new("java")
       .args([
         "-jar",
-        &download_path,
+        &pconf.jar_file,
         "--installServer",
         pdir
           .to_str()
           .ok_or_eyre("Failed to convert path to string")?,
       ])
       .spawn()?;
+
+    pconf.flavor = ServerSoftware::FORGE(self.clone());
+    pconf.flavor_version = self.flavor_version.clone();
+    pconf.save(pdir)?;
 
     println!("----- Forge-Installer output -----");
     let result = cmd.wait_with_output()?;
@@ -103,8 +103,17 @@ impl SeverSoftware for Forge {
 
     mc_versions.sort();
     mc_versions.dedup();
+    mc_versions.reverse();
 
     Ok(mc_versions)
+  }
+
+  fn get_self_versions(&mut self, mc_version: &McVersion) -> Result<()>
+  where
+    Self: Sized + Clone,
+  {
+    self.flavor_version = select_flavor_version(get_forge_versions_for_mc_version(mc_version)?)?;
+    Ok(())
   }
 }
 

@@ -11,6 +11,7 @@ use crate::config::{CONFIG_PATH, ProjectConfig};
 pub mod command;
 pub mod common;
 pub mod config;
+pub mod mod_source;
 pub mod software;
 pub mod tui;
 
@@ -43,7 +44,7 @@ fn main() -> Result<()> {
 
   let args = Args::parse();
   match args.action {
-    BaseAction::Init(initargs) => init::init_dir(initargs),
+    BaseAction::Init(initargs) => init::init_dir(initargs)?,
     BaseAction::New(newargs) => new::create_new_server(newargs)?,
   }
   Ok(())
