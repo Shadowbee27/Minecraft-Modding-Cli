@@ -55,7 +55,7 @@ impl ModsIndex {
   /// This expects the folder to exist
   pub fn write_conf(&self) -> Result<()> {
     fs::write(
-      &self.path.join(".mcmc-index/mods.json"),
+      self.path.join(".mcmc-index/mods.json"),
       serde_json::to_string(self)?,
     )?;
     Ok(())

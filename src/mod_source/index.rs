@@ -43,7 +43,7 @@ pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
       mod_meta.hash = get_sha256(path).unwrap();
 
       if mod_source == ModSource::MODRINTH {
-        get_version_from_hash(&mod_meta.hash.clone(), &mut mod_meta).unwrap();
+        get_version_from_hash(mod_meta.hash.clone(), &mut mod_meta).unwrap();
       }
 
       mod_meta

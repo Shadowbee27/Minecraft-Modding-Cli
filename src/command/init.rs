@@ -101,7 +101,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   let mod_dir = &serversoftware.get_moddification_dir();
 
   if let Some(mod_dir) = mod_dir {
-    let mut index = ModsIndex::new(PathBuf::from(dir.join(mod_dir)))?;
+    let mut index = ModsIndex::new(dir.join(mod_dir))?;
 
     if exists(dir.join(mod_dir))? {
       index_mods(&mut index)?;
