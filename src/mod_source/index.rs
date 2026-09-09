@@ -1,6 +1,11 @@
 use color_eyre::Result;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use std::fs::{DirEntry, read_dir};
+use sha1::{Digest, Sha1};
+use std::{
+  fs::{DirEntry, File, read_dir},
+  io::{BufReader, Read},
+  time::Instant,
+};
 
 use crate::{
   config::mod_index::{ModMeta, ModsIndex},
@@ -28,6 +33,8 @@ pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
 
   let mod_source = preferred_mod_source()?;
 
+  let time = Instant::now();
+
   let mod_meta_vec: Vec<ModMeta> = jars
     .par_iter()
     .map(|j| {
@@ -43,6 +50,8 @@ pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
     })
     .collect();
 
+  dbg!(time.elapsed());
+
   index.mod_meta = Some(mod_meta_vec);
   Ok(())
 }
@@ -50,7 +59,24 @@ pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
 fn get_sha256<T: std::marker::Send + std::convert::AsRef<std::path::Path>>(
   path: T,
 ) -> Result<String> {
-  Ok(sha256::try_digest(path)?)
+  let file = File::open(path)?;
+  let mut reader = BufReader::new(file);
+
+  let mut hasher = Sha1::new();
+  let mut buffer = [0u8; 8192];
+
+  loop {
+    let bytes_read = reader.read(&mut buffer)?;
+
+    if bytes_read == 0 {
+      break;
+    }
+
+    hasher.update(&buffer[..bytes_read]);
+  }
+
+  let hash = hasher.finalize();
+  Ok(hex::encode(hash))
 }
 
 #[cfg(test)]
@@ -61,7 +87,7 @@ mod tests {
   fn test_hash() {
     assert_eq!(
       get_sha256("./LICENSE").unwrap(),
-      "8dde21394cabe75d8dffaff8d3c9f28f9b495c05dbfc296693dbaecf57bce46f"
+      "51fbad96d4ea2d0c5302e0f276e46f973b06eea0"
     );
   }
 }

@@ -18,12 +18,14 @@ pub struct ModsIndex {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ModMeta {
+  #[serde(default)]
   pub version_id: String,
   pub source: ModSource,
   pub hash: String,
   pub project_id: String,
   pub loaders: Vec<String>,
   pub mc_versions: Vec<String>,
+  #[serde(default)]
   pub deps: Vec<Deps>,
 }
 
@@ -53,8 +55,8 @@ impl ModsIndex {
   /// This expects the folder to exist
   pub fn write_conf(&self) -> Result<()> {
     fs::write(
-      &self.path.join(".mcmc-index/mods.toml"),
-      toml::to_string(self)?,
+      &self.path.join(".mcmc-index/mods.json"),
+      serde_json::to_string(self)?,
     )?;
     Ok(())
   }

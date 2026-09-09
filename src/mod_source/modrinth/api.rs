@@ -30,12 +30,13 @@ pub struct Deps {
   pub dependency_type: DepsType,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DepsType {
-  Required,
-  Optional,
-  Incompatible,
-  Embedded,
+  required,
+  optional,
+  incompatible,
+  embedded,
 }
 
 pub fn get_version_from_hash<T: fmt::Display>(hash: T, mod_meta: &mut ModMeta) -> Result<()> {

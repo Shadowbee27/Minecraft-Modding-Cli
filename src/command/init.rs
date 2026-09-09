@@ -105,6 +105,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
 
     if exists(dir.join(mod_dir))? {
       index_mods(&mut index)?;
+      dbg!(&index);
       index.write_conf()?;
     }
   }
