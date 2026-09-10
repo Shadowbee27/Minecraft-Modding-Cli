@@ -3,9 +3,13 @@ use color_eyre::{
   eyre::{Context, eyre},
 };
 use semver::{BuildMetadata, Prerelease, Version};
-use std::fs::{self, exists};
+use serde::{Deserialize, Serialize};
+use std::{
+  fs::{self, exists},
+  path::{Path, PathBuf},
+};
 
-use crate::config::ProjectConfig;
+use crate::software::{McVersion, ServerSoftware};
 
 pub const PROJECT_CONFIG_PATH: &str = ".mcmc/config.toml";
 pub const PROJECT_CONFIG_VERSION: Version = Version {
@@ -16,17 +20,41 @@ pub const PROJECT_CONFIG_VERSION: Version = Version {
   build: BuildMetadata::EMPTY,
 };
 
-pub fn load_project_config() -> Result<ProjectConfig> {
-  let exists = exists(PROJECT_CONFIG_PATH).wrap_err("Failed to check if project-config exists")?;
+#[derive(Deserialize, Serialize)]
+pub struct ProjectConfig {
+  pub config_version: Version,
+  pub flavor: ServerSoftware,
+  pub flavor_version: String,
+  pub mc_version: McVersion,
+  pub jar_file: String,
+}
 
-  if !exists {
-    return Err(eyre!("Config not found in current directory!"));
+impl ProjectConfig {
+  pub fn save(&self, project_dir: &Path) -> Result<()> {
+    let serialized = toml::to_string(&self)?;
+
+    fs::write(project_dir.join(PROJECT_CONFIG_PATH), serialized)?;
+    Ok(())
   }
 
-  let config = fs::read_to_string(PROJECT_CONFIG_PATH).wrap_err("Failed to read config")?;
+  pub fn load_project_config(path_prefix: &Option<PathBuf>) -> Result<ProjectConfig> {
+    let conf_path = if let Some(prefix) = path_prefix {
+      prefix.join(PROJECT_CONFIG_PATH)
+    } else {
+      PathBuf::from(PROJECT_CONFIG_PATH)
+    };
 
-  let toml_config: ProjectConfig =
-    toml::from_str(&config).wrap_err("Failed to prase Project config")?;
+    let exists = exists(&conf_path).wrap_err("Failed to check if project-config exists")?;
 
-  Ok(toml_config)
+    if !exists {
+      return Err(eyre!("Config not found in current directory!"));
+    }
+
+    let config = fs::read_to_string(&conf_path).wrap_err("Failed to read config")?;
+
+    let toml_config: ProjectConfig =
+      toml::from_str(&config).wrap_err("Failed to prase Project config")?;
+
+    Ok(toml_config)
+  }
 }

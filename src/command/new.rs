@@ -11,7 +11,7 @@ use crate::tui::dialogs::minecraft::mc_version_select;
 use crate::tui::dialogs::software::server_software_selector;
 use crate::{
   common::get_current_full_dir,
-  config::{ProjectConfig, project_conf::PROJECT_CONFIG_VERSION},
+  config::project_conf::{PROJECT_CONFIG_VERSION, ProjectConfig},
 };
 
 #[derive(Parser, Debug, Clone)]
