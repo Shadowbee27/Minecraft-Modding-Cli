@@ -1,12 +1,7 @@
 use clap::*;
-use color_eyre::{
-  Result,
-  eyre::{Context, eyre},
-};
-use std::fs::{exists, read_to_string};
+use color_eyre::Result;
 
-use crate::command::{init, new};
-use crate::config::{CONFIG_PATH, ProjectConfig};
+use crate::command::{init, new, run};
 
 pub mod command;
 pub mod common;
@@ -24,6 +19,7 @@ struct Args {
 
 #[derive(clap::Subcommand, Debug, Clone)]
 enum BaseAction {
+  Run(run::RunArgs),
   Init(init::InitArgs),
   New(new::CreateNewArgs),
   // TODO: Update(software & mods), Install, ...
@@ -46,21 +42,7 @@ fn main() -> Result<()> {
   match args.action {
     BaseAction::Init(initargs) => init::init_dir(initargs)?,
     BaseAction::New(newargs) => new::create_new_server(newargs)?,
+    BaseAction::Run(runargs) => run::run_server(runargs)?,
   }
   Ok(())
-}
-
-fn load_config() -> Result<ProjectConfig> {
-  let exists = exists(CONFIG_PATH).wrap_err("Failed to check if project-config exists")?;
-
-  if !exists {
-    return Err(eyre!("Config not found in current directory!"));
-  }
-
-  let config = read_to_string(CONFIG_PATH).wrap_err("Failed to read config")?;
-
-  let toml_config: ProjectConfig =
-    toml::from_str(&config).wrap_err("Failed to prase Project config")?;
-
-  Ok(toml_config)
 }

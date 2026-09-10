@@ -8,7 +8,7 @@ use std::{
 use strum::IntoEnumIterator;
 
 use crate::{
-  config::{PROJECT_CONFIG_VERSION, ProjectConfig, mod_index::ModsIndex},
+  config::{ProjectConfig, mod_index::ModsIndex, project_conf::PROJECT_CONFIG_VERSION},
   mod_source::index::index_mods,
   software::{McVersion, ServerSoftware},
   tui::dialogs::{minecraft::mc_version_select, software::server_software_selector},
