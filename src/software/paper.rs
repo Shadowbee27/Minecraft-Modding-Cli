@@ -12,7 +12,7 @@ use tokio::runtime::Runtime;
 use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::common::download::download_file;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 
 const PAPER_URL: &str = "https://fill.papermc.io/v3/projects/paper";
 

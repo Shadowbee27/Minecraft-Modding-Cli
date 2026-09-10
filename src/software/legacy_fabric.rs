@@ -12,7 +12,7 @@ use tokio::runtime::Runtime;
 use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::tui::dialogs::flavor;
-use crate::{common::download::download_file, config::ProjectConfig};
+use crate::{common::download::download_file, config::project_conf::ProjectConfig};
 
 const LEGACY_FABRIC_URL: &str = "https://meta.legacyfabric.net/v2/versions";
 const LEGACY_FABRIC_DOWNLOAD_URL: &str = "/loader/";

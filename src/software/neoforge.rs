@@ -11,7 +11,7 @@ use tokio::runtime::Runtime;
 use super::{ServerSoftware, SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
 use crate::common::maven::get_versions as get_maven_versions;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor::select_flavor_version;
 

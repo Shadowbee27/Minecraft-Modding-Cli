@@ -12,7 +12,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::common::download::download_file;
 use crate::common::maven::get_versions;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 use crate::software::{McVersion, ServerSoftware};
 use crate::tui::dialogs::flavor::select_flavor_version;
 

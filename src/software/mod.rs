@@ -4,7 +4,7 @@ use std::{fmt::Display, path::Path};
 use strum::EnumIter;
 
 use crate::{
-  config::ProjectConfig,
+  config::project_conf::ProjectConfig,
   software::{
     babric::Babric, bukkit::Bukkit, fabric::Fabric, folia::Folia, forge::Forge,
     legacy_fabric::LegacyFabric, neoforge::NeoForge, paper::Paper, purpur::Purpur, quilt::Quilt,

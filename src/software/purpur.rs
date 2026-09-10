@@ -8,7 +8,7 @@ use tokio::runtime::Runtime;
 
 use super::{SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 use crate::tui::dialogs::flavor::select_flavor_version;
 
 const PURPUR_URL: &str = "https://api.purpurmc.org/v2/purpur";

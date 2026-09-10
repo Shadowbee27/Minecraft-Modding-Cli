@@ -9,7 +9,7 @@ use tokio::runtime::Runtime;
 
 use super::{SeverSoftware, SupportedVersion};
 use crate::common::download::download_file;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor::select_flavor_version;
 

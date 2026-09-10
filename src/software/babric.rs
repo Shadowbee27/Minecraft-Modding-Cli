@@ -13,7 +13,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor;
-use crate::{common::download::download_file, config::ProjectConfig};
+use crate::{common::download::download_file, config::project_conf::ProjectConfig};
 
 const BABRIC_URL: &str = "https://meta.babric.glass-launcher.net/v2/versions";
 const BABRIC_DOWNLOAD_URL: &str = "/loader/";

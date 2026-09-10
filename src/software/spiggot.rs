@@ -7,8 +7,8 @@ use std::process::Command;
 
 use super::SeverSoftware;
 use super::SupportedVersion;
-use crate::config::ProjectConfig;
 use crate::config::global_conf::get_buildtools_build_dir;
+use crate::config::project_conf::ProjectConfig;
 use crate::software::buildtools::{download_build_tools_jar, get_mc_versions};
 
 // const _SPIGGOT_URL: &str = "hub.spigotmc.org";

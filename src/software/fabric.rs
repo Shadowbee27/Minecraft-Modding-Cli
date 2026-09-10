@@ -13,7 +13,7 @@ use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor;
-use crate::{common::download::download_file, config::ProjectConfig};
+use crate::{common::download::download_file, config::project_conf::ProjectConfig};
 
 const FABRIC_URL: &str = "https://meta.fabricmc.net/v2/versions";
 const FABRIC_DOWNLOAD_URL: &str = "/loader/";

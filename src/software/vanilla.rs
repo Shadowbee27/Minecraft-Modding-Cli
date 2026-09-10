@@ -8,7 +8,7 @@ use tokio::runtime::Runtime;
 use super::SeverSoftware;
 use super::SupportedVersion;
 use crate::common::download::download_file;
-use crate::config::ProjectConfig;
+use crate::config::project_conf::ProjectConfig;
 use crate::tui::dialogs::minecraft::mc_version_select;
 
 const VANILLA_URL: &str = "https://piston-meta.mojang.com/mc/game/version_manifest.json";
