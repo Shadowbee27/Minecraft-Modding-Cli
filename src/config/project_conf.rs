@@ -20,13 +20,31 @@ pub const PROJECT_CONFIG_VERSION: Version = Version {
   build: BuildMetadata::EMPTY,
 };
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ProjectConfig {
   pub config_version: Version,
   pub flavor: ServerSoftware,
   pub flavor_version: String,
   pub mc_version: McVersion,
   pub jar_file: String,
+  pub launch_args: LaunchArgs,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct LaunchArgs {
+  max_mem: u128,
+  min_mem: u128,
+  user: Vec<String>,
+}
+
+impl Default for LaunchArgs {
+  fn default() -> Self {
+    LaunchArgs {
+      max_mem: 2048,
+      min_mem: 1024,
+      user: Vec::new(),
+    }
+  }
 }
 
 impl ProjectConfig {

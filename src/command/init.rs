@@ -9,7 +9,8 @@ use strum::IntoEnumIterator;
 
 use crate::{
   config::{
-    mod_index::ModsIndex, project_conf::PROJECT_CONFIG_VERSION, project_conf::ProjectConfig,
+    mod_index::ModsIndex,
+    project_conf::{LaunchArgs, PROJECT_CONFIG_VERSION, ProjectConfig},
   },
   mod_source::index::index_mods,
   software::{McVersion, ServerSoftware},
@@ -94,6 +95,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     flavor_version: String::new(),
     mc_version: mc_version.clone(),
     jar_file: jar_file.clone(),
+    launch_args: LaunchArgs::default(),
   };
   fs::create_dir_all(dir.join(".mcmc/"))?;
   pconf.save(&dir)?;

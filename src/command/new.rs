@@ -6,13 +6,13 @@ use color_eyre::{
 use std::fs::{create_dir_all, exists};
 use std::path::PathBuf;
 
-use crate::software::ServerSoftware;
 use crate::tui::dialogs::minecraft::mc_version_select;
 use crate::tui::dialogs::software::server_software_selector;
 use crate::{
   common::get_current_full_dir,
   config::project_conf::{PROJECT_CONFIG_VERSION, ProjectConfig},
 };
+use crate::{config::project_conf::LaunchArgs, software::ServerSoftware};
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
@@ -72,6 +72,7 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
     flavor_version: server_software.clone().get_flavor_version(),
     mc_version: minecraft_version?.clone(),
     jar_file: String::new(),
+    launch_args: LaunchArgs::default(),
   };
 
   project_config
