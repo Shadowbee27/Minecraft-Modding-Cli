@@ -7,7 +7,7 @@ pub mod curseforge;
 pub mod index;
 pub mod modrinth;
 
-#[derive(Debug, Clone, Serialize, Deserialize, EnumIter, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, EnumIter, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ModSource {
   // CURSEFORGE,
   MODRINTH,

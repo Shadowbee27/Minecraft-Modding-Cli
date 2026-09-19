@@ -1,9 +1,9 @@
 use super::Java;
 
 #[derive(Debug, Clone)]
-pub struct JavaEight {}
+pub struct Java8 {}
 
-impl Java for JavaEight {
+impl Java for Java8 {
   fn install() -> color_eyre::eyre::Result<()> {
     unimplemented!()
   }

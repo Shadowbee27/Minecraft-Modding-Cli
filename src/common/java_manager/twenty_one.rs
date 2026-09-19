@@ -1,9 +1,9 @@
 use super::Java;
 
 #[derive(Debug, Clone)]
-pub struct JavaTwentyOne {}
+pub struct Java21 {}
 
-impl Java for JavaTwentyOne {
+impl Java for Java21 {
   fn install() -> color_eyre::eyre::Result<()> {
     unimplemented!()
   }

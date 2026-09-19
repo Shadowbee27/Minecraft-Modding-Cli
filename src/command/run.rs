@@ -11,6 +11,6 @@ pub struct RunArgs {
 }
 
 pub fn run_server(args: RunArgs) -> Result<()> {
-  let project_config = ProjectConfig::load_project_config(&args.dir);
+  let _project_config = ProjectConfig::load_project_config(&args.dir);
   unimplemented!()
 }

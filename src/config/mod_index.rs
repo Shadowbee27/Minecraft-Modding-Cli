@@ -29,7 +29,7 @@ pub struct ModMeta {
   pub deps: Vec<Deps>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
 pub enum ModSource {
   // CURSEFORGE,
   MODRINTH,

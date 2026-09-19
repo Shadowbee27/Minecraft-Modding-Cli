@@ -7,7 +7,7 @@ use std::process::exit;
 use crate::software::{McVersion, ServerSoftware, SupportedVersion};
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum McVersionQuestion {
   ShowUnstable(bool),
   Version(SupportedVersion),

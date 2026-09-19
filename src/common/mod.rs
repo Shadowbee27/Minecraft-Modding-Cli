@@ -12,3 +12,9 @@ pub fn get_current_full_dir() -> Result<PathBuf> {
     String::from_utf8(cmd.output()?.stdout)?.replace("\n", ""),
   ))
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Arch {
+  X64,
+  X32,
+}

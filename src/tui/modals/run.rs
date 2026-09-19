@@ -1,5 +1,3 @@
-use std::process::{Child, Command, Output};
-
 use color_eyre::Result;
 
 #[derive(Debug, Clone)]
@@ -52,6 +50,6 @@ impl MemorySize {
   }
 }
 
-pub fn init_run_server_modal(exe_args: ExeArgs) -> Result<()> {
+pub fn init_run_server_modal(_exe_args: ExeArgs) -> Result<()> {
   unimplemented!()
 }

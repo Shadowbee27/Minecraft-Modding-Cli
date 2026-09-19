@@ -31,7 +31,7 @@ pub struct Deps {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DepsType {
   required,
   optional,
