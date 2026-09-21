@@ -27,8 +27,11 @@ impl JavaPath {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum FILTERS {
+  NONE,
   GENTOO,
   AOSC,
+  SDKMAN,
+  ASDF,
   STANDARD,
 }
 
@@ -58,13 +61,13 @@ pub fn get_possible_paths<'a>() -> Vec<JavaPath> {
     JavaPath::from(
       home.join(".asdf").join("installs").join("java"),
       JavaType::SCANPATH,
-      FILTERS::STANDARD,
+      FILTERS::ASDF,
     ),
     // Javas downloaded by sdkman
     JavaPath::from(
       home.join(".sdkman").join("candidates").join("java"),
       JavaType::SCANPATH,
-      FILTERS::STANDARD,
+      FILTERS::SDKMAN,
     ),
   ]);
 
@@ -102,7 +105,61 @@ pub fn get_possible_paths<'a>() -> Vec<JavaPath> {
 
 #[cfg(target_os = "macos")]
 pub fn get_possible_paths() -> Vec<JavaPath> {
-  vec![]
+  use std::env::home_dir;
+  let home = home_dir().unwrap();
+
+  let mut paths = vec![
+    JavaPath::from(
+      "/Applications/Xcode.app/Contents/Applications/Application Loader.app/Contents/MacOS/itms/java/bin/java",
+      JavaType::BIN,
+      FILTERS::NONE,
+    ),
+    JavaPath::from(
+      "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java",
+      JavaType::BIN,
+      FILTERS::NONE,
+    ),
+    JavaPath::from(
+      "/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/java",
+      JavaType::BIN,
+      FILTERS::NONE,
+    ),
+    JavaPath::from(
+      "/Library/Java/JavaVirtualMachines/",
+      JavaType::SCANPATH,
+      FILTERS::STANDARD,
+    ),
+    JavaPath::from(
+      "/System/Library/Java/JavaVirtualMachines/",
+      JavaType::SCANPATH,
+      FILTERS::STANDARD,
+    ),
+    // javas from sdkman
+    // home.join(".sdkman").join("candidates").join("java")
+    JavaPath::from(
+      home.join(".sdkman").join("candidates").join("java"),
+      JavaType::SCANPATH,
+      FILTERS::SDKMAN,
+    ),
+    // javas downloaded by asdf
+    JavaPath::from(
+      home.join(".asdf").join("installs").join("java"),
+      JavaType::SCANPATH,
+      FILTERS::ASDF,
+    ),
+    // java in user library folder (like from intellij downloads)
+    JavaPath::from(
+      home
+        .join("Library")
+        .join("Java")
+        .join("JavaVirtualMachines"),
+      JavaType::SCANPATH,
+      FILTERS::ASDF,
+    ),
+  ];
+
+  paths.sort();
+  paths
 }
 
 #[cfg(target_os = "windows")]
