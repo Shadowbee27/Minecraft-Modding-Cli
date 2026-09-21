@@ -20,7 +20,7 @@ impl JavaPath {
     JavaPath {
       path: path.into(),
       java_type: javatype,
-      filter: filter,
+      filter,
     }
   }
 }
@@ -44,7 +44,7 @@ pub enum JavaType {
 }
 
 #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "openbsd"))]
-pub fn get_possible_paths<'a>() -> Vec<JavaPath> {
+pub fn get_possible_paths() -> Vec<JavaPath> {
   let home = env::home_dir().unwrap();
   let mut paths = Vec::new();
 
