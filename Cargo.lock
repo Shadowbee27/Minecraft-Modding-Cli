@@ -1123,7 +1123,6 @@ dependencies = [
  "crossterm",
  "dyn-clone",
  "fuzzy-matcher",
- "termion",
  "unicode-segmentation",
  "unicode-width",
 ]
@@ -1449,12 +1448,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "numtoa"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6aa2c4e539b869820a2b82e1aef6ff40aa85e65decdd5185e83fb4b1249cd00f"
-
-[[package]]
 name = "object"
 version = "0.37.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1707,7 +1700,7 @@ checksum = "3274ba0a2c5e1bcad2a2005d20f4dc59dad26b2eb0940fb094500dba4099d57d"
 dependencies = [
  "instability",
  "ratatui-core",
- "ratatui-termion",
+ "ratatui-crossterm",
  "ratatui-widgets",
  "serde",
 ]
@@ -1734,14 +1727,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "ratatui-termion"
+name = "ratatui-crossterm"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87c732202fa5a71a9da0991013f0853e53f87048f45198e3a1ca3ee722accc2f"
+checksum = "567584a3b0e6a8203c23de40b4861497266725eb5363dbfd18a1edd603cca9f0"
 dependencies = [
+ "cfg-if",
+ "crossterm",
  "instability",
  "ratatui-core",
- "termion",
 ]
 
 [[package]]
@@ -2311,16 +2305,6 @@ checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
-]
-
-[[package]]
-name = "termion"
-version = "4.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f44138a9ae08f0f502f24104d82517ef4da7330c35acd638f1f29d3cd5475ecb"
-dependencies = [
- "libc",
- "numtoa",
 ]
 
 [[package]]
