@@ -34,16 +34,11 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   let mut jar = Vec::new();
   let mut dirs = Vec::new();
 
-  for path in WalkDir::new(&dir) {
-    match path {
-      Ok(p) => {
-        if p.file_type().is_dir() {
-          dirs.push(p.into_path());
-        } else if p.file_name().to_str().unwrap_or_default().ends_with(".jar") {
-          jar.push(p.into_path());
-        }
-      }
-      Err(_) => {}
+  for p in WalkDir::new(&dir).into_iter().flatten() {
+    if p.file_type().is_dir() {
+      dirs.push(p.into_path());
+    } else if p.file_name().to_str().unwrap_or_default().ends_with(".jar") {
+      jar.push(p.into_path());
     }
   }
 

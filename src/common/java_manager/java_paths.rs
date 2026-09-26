@@ -6,7 +6,7 @@ use color_eyre::Result;
 //use color_eyre::eyre::Ok;
 use std::env;
 use std::fs::exists;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 use crate::common::java_manager::java_paths::FILTERS::AOSC;
@@ -191,26 +191,21 @@ impl FILTERS {
   // search for openjdk- | openj9-
   fn gentoo(path: &PathBuf) -> Result<Vec<PathBuf>> {
     let mut javas: Vec<PathBuf> = Vec::new();
-    for dir in WalkDir::new(&path) {
-      match dir {
-        Ok(d) => {
-          if d.file_type().is_dir() {
-            if d
-              .file_name()
-              .to_str()
-              .unwrap_or_default()
-              .starts_with("openjdk-")
-              || d
-                .file_name()
-                .to_str()
-                .unwrap_or_default()
-                .starts_with("openj9-")
-            {
-              javas.append(&mut FILTERS::standard(&d.into_path())?);
-            }
-          }
-        }
-        Err(_) => {}
+    for dir in WalkDir::new(path) {
+      if let Ok(d) = dir
+        && d.file_type().is_dir()
+        && (d
+          .file_name()
+          .to_str()
+          .unwrap_or_default()
+          .starts_with("openjdk-")
+          || d
+            .file_name()
+            .to_str()
+            .unwrap_or_default()
+            .starts_with("openj9-"))
+      {
+        javas.append(&mut FILTERS::standard(&d.into_path())?);
       }
     }
     Ok(javas)
@@ -219,22 +214,17 @@ impl FILTERS {
   // search for java- of "java"
   fn aosc(path: &PathBuf) -> Result<Vec<PathBuf>> {
     let mut javas: Vec<PathBuf> = Vec::new();
-    for dir in WalkDir::new(&path) {
-      match dir {
-        Ok(d) => {
-          if d.file_type().is_dir() {
-            if d
-              .file_name()
-              .to_str()
-              .unwrap_or_default()
-              .starts_with("java-")
-              || d.file_name().to_str().unwrap_or_default() == "java"
-            {
-              javas.append(&mut FILTERS::standard(&d.into_path())?);
-            }
-          }
-        }
-        Err(_) => {}
+    for dir in WalkDir::new(path) {
+      if let Ok(d) = dir
+        && d.file_type().is_dir()
+        && (d
+          .file_name()
+          .to_str()
+          .unwrap_or_default()
+          .starts_with("java-")
+          || d.file_name().to_str().unwrap_or_default() == "java")
+      {
+        javas.append(&mut FILTERS::standard(&d.into_path())?);
       }
     }
     Ok(javas)
@@ -244,14 +234,11 @@ impl FILTERS {
   fn sdkman(path: &PathBuf) -> Result<Vec<PathBuf>> {
     let mut javas: Vec<PathBuf> = Vec::new();
 
-    for dir in WalkDir::new(&path) {
-      match dir {
-        Ok(d) => {
-          if d.file_type().is_dir() {
-            javas.append(&mut FILTERS::standard(&d.into_path())?);
-          }
-        }
-        Err(_) => {}
+    for dir in WalkDir::new(path) {
+      if let Ok(d) = dir
+        && d.file_type().is_dir()
+      {
+        javas.append(&mut FILTERS::standard(&d.into_path())?);
       }
     }
 
@@ -262,14 +249,11 @@ impl FILTERS {
   fn asdf(path: &PathBuf) -> Result<Vec<PathBuf>> {
     let mut javas: Vec<PathBuf> = Vec::new();
 
-    for dir in WalkDir::new(&path) {
-      match dir {
-        Ok(d) => {
-          if d.file_type().is_dir() {
-            javas.append(&mut FILTERS::standard(&d.into_path())?);
-          }
-        }
-        Err(_) => {}
+    for dir in WalkDir::new(path) {
+      if let Ok(d) = dir
+        && d.file_type().is_dir()
+      {
+        javas.append(&mut FILTERS::standard(&d.into_path())?);
       }
     }
 
@@ -277,7 +261,7 @@ impl FILTERS {
   }
 
   // scan for jre/bin/java | bin/java
-  fn standard(path: &PathBuf) -> Result<Vec<PathBuf>> {
+  fn standard(path: &Path) -> Result<Vec<PathBuf>> {
     const JAVA_RUNTIME_PATH: &str = "jre/bin/java";
     const JAVA_DIR: &str = "bin/java";
     let mut javas: Vec<PathBuf> = Vec::new();
@@ -285,7 +269,7 @@ impl FILTERS {
     if exists(path.join(JAVA_RUNTIME_PATH))? {
       javas.push(path.join(JAVA_RUNTIME_PATH));
     } else if exists(path.join(JAVA_DIR))? {
-      javas.push(path.join(JAVA_RUNTIME_PATH));
+      javas.push(path.join(JAVA_DIR));
     }
 
     Ok(javas)
