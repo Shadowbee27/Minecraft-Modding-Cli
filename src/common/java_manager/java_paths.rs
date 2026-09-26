@@ -218,7 +218,26 @@ impl FILTERS {
 
   // search for java- of "java"
   fn aosc(path: &PathBuf) -> Result<Vec<PathBuf>> {
-    unimplemented!()
+    let mut javas: Vec<PathBuf> = Vec::new();
+    for dir in WalkDir::new(&path) {
+      match dir {
+        Ok(d) => {
+          if d.file_type().is_dir() {
+            if d
+              .file_name()
+              .to_str()
+              .unwrap_or_default()
+              .starts_with("java-")
+              || d.file_name().to_str().unwrap_or_default() == "java"
+            {
+              javas.append(&mut FILTERS::standard(&d.into_path())?);
+            }
+          }
+        }
+        Err(_) => {}
+      }
+    }
+    Ok(javas)
   }
 
   // scan every dir for bin/java
@@ -242,24 +261,18 @@ impl FILTERS {
   // scan every dir for bin/java
   fn asdf(path: &PathBuf) -> Result<Vec<PathBuf>> {
     let mut javas: Vec<PathBuf> = Vec::new();
+
     for dir in WalkDir::new(&path) {
       match dir {
         Ok(d) => {
           if d.file_type().is_dir() {
-            if d
-              .file_name()
-              .to_str()
-              .unwrap_or_default()
-              .starts_with("java-")
-              || d.file_name().to_str().unwrap_or_default() == "java"
-            {
-              javas.append(&mut FILTERS::standard(&d.into_path())?);
-            }
+            javas.append(&mut FILTERS::standard(&d.into_path())?);
           }
         }
         Err(_) => {}
       }
     }
+
     Ok(javas)
   }
 
