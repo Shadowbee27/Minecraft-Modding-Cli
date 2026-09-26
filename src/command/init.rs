@@ -2,10 +2,11 @@ use clap::clap_derive::*;
 use color_eyre::Result;
 use semver::Version;
 use std::{
-  fs::{self, exists, read_dir},
+  fs::{self, exists},
   path::PathBuf,
 };
 use strum::IntoEnumIterator;
+use walkdir::WalkDir;
 
 use crate::{
   config::{
@@ -30,23 +31,19 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     PathBuf::from(".")
   };
 
-  let files = read_dir(&dir)?;
-
   let mut jar = Vec::new();
   let mut dirs = Vec::new();
 
-  for path in files {
-    if path.as_ref().unwrap().path().is_dir() {
-      dirs.push(path.unwrap().path());
-    } else if path
-      .as_ref()
-      .unwrap()
-      .path()
-      .to_str()
-      .unwrap()
-      .ends_with("jar")
-    {
-      jar.push(path.unwrap().path());
+  for path in WalkDir::new(&dir) {
+    match path {
+      Ok(p) => {
+        if p.file_type().is_dir() {
+          dirs.push(p.into_path());
+        } else if p.file_name().to_str().unwrap_or_default().ends_with(".jar") {
+          jar.push(p.into_path());
+        }
+      }
+      Err(_) => {}
     }
   }
 

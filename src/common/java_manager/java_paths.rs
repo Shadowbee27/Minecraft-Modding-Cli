@@ -2,8 +2,14 @@
  * The code is somewhat copied from https://github.com/PrismLauncher/PrismLauncher/blob/release-11.x/launcher/java/JavaUtils.cpp
  */
 
+use color_eyre::Result;
+//use color_eyre::eyre::Ok;
 use std::env;
+use std::fs::exists;
 use std::path::PathBuf;
+use walkdir::WalkDir;
+
+use crate::common::java_manager::java_paths::FILTERS::AOSC;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaPath {
@@ -25,7 +31,6 @@ impl JavaPath {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum FILTERS {
-  NONE,
   GENTOO,
   AOSC,
   SDKMAN,
@@ -151,4 +156,135 @@ pub fn get_possible_paths() -> Vec<JavaPath> {
 #[cfg(target_os = "windows")]
 pub fn get_possible_paths() -> Vec<JavaPath> {
   vec![]
+}
+
+impl FILTERS {
+  pub fn run(java_path: JavaPath) -> Result<Vec<PathBuf>> {
+    let mut existing_paths = Vec::new();
+    match &java_path.java_type {
+      JavaType::BIN => {
+        if exists(&java_path.path)? {
+          existing_paths.push(java_path.path.clone());
+        }
+      }
+      JavaType::SCANPATH(f) => match &f {
+        FILTERS::GENTOO => existing_paths.append(&mut FILTERS::gentoo(&java_path.path)?),
+        AOSC => existing_paths.append(&mut FILTERS::aosc(&java_path.path)?),
+        FILTERS::SDKMAN => existing_paths.append(&mut FILTERS::sdkman(&java_path.path)?),
+        FILTERS::ASDF => existing_paths.append(&mut FILTERS::asdf(&java_path.path)?),
+        FILTERS::STANDARD => existing_paths.append(&mut FILTERS::standard(&java_path.path)?),
+      },
+
+      #[cfg(target_os = "windows")]
+      JavaType::REGISTRY => {
+        use color_eyre::eyre::eyre;
+
+        return Err(eyre!(
+          "Windows isn't supported you will need to set the java path yourself in .mcmc/config.toml"
+        ));
+      }
+    }
+
+    Ok(existing_paths)
+  }
+
+  // search for openjdk- | openj9-
+  fn gentoo(path: &PathBuf) -> Result<Vec<PathBuf>> {
+    let mut javas: Vec<PathBuf> = Vec::new();
+    for dir in WalkDir::new(&path) {
+      match dir {
+        Ok(d) => {
+          if d.file_type().is_dir() {
+            if d
+              .file_name()
+              .to_str()
+              .unwrap_or_default()
+              .starts_with("openjdk-")
+              || d
+                .file_name()
+                .to_str()
+                .unwrap_or_default()
+                .starts_with("openj9-")
+            {
+              javas.append(&mut FILTERS::standard(&d.into_path())?);
+            }
+          }
+        }
+        Err(_) => {}
+      }
+    }
+    Ok(javas)
+  }
+
+  // search for java- of "java"
+  fn aosc(path: &PathBuf) -> Result<Vec<PathBuf>> {
+    unimplemented!()
+  }
+
+  // scan every dir for bin/java
+  fn sdkman(path: &PathBuf) -> Result<Vec<PathBuf>> {
+    let mut javas: Vec<PathBuf> = Vec::new();
+
+    for dir in WalkDir::new(&path) {
+      match dir {
+        Ok(d) => {
+          if d.file_type().is_dir() {
+            javas.append(&mut FILTERS::standard(&d.into_path())?);
+          }
+        }
+        Err(_) => {}
+      }
+    }
+
+    Ok(javas)
+  }
+
+  // scan every dir for bin/java
+  fn asdf(path: &PathBuf) -> Result<Vec<PathBuf>> {
+    let mut javas: Vec<PathBuf> = Vec::new();
+    for dir in WalkDir::new(&path) {
+      match dir {
+        Ok(d) => {
+          if d.file_type().is_dir() {
+            if d
+              .file_name()
+              .to_str()
+              .unwrap_or_default()
+              .starts_with("java-")
+              || d.file_name().to_str().unwrap_or_default() == "java"
+            {
+              javas.append(&mut FILTERS::standard(&d.into_path())?);
+            }
+          }
+        }
+        Err(_) => {}
+      }
+    }
+    Ok(javas)
+  }
+
+  // scan for jre/bin/java | bin/java
+  fn standard(path: &PathBuf) -> Result<Vec<PathBuf>> {
+    const JAVA_RUNTIME_PATH: &str = "jre/bin/java";
+    const JAVA_DIR: &str = "bin/java";
+    let mut javas: Vec<PathBuf> = Vec::new();
+
+    if exists(path.join(JAVA_RUNTIME_PATH))? {
+      javas.push(path.join(JAVA_RUNTIME_PATH));
+    } else if exists(path.join(JAVA_DIR))? {
+      javas.push(path.join(JAVA_RUNTIME_PATH));
+    }
+
+    Ok(javas)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn gentoo() {
+    dbg!(FILTERS::gentoo(&PathBuf::from("/usr/lib")).unwrap());
+  }
 }

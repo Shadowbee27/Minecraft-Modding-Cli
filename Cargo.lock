@@ -1360,6 +1360,7 @@ dependencies = [
  "strum",
  "tokio",
  "toml",
+ "walkdir",
  "windows-registry 0.100.0",
 ]
 
