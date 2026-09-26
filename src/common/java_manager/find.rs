@@ -25,3 +25,15 @@ pub fn scan(possible_paths: Vec<JavaPath>) -> Result<Vec<PathBuf>> {
   }
   Ok(existing_paths)
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn java_paths() {
+    let java_paths = get_possible_paths();
+    let check_paths = scan(java_paths).unwrap();
+    dbg!(check_paths);
+  }
+}

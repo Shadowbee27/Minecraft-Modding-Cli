@@ -275,13 +275,3 @@ impl FILTERS {
     Ok(javas)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn gentoo() {
-    dbg!(FILTERS::gentoo(&PathBuf::from("/usr/lib")).unwrap());
-  }
-}
