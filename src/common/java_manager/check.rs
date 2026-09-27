@@ -28,10 +28,12 @@ pub fn check_javas(javas: Vec<PathBuf>) -> Vec<JavaVersion> {
 }
 
 fn get_jvm_info(java_path: &PathBuf) -> Result<JavaInfo> {
-  let mut java_cmd = Command::new(&java_path);
+  let mut java_cmd = Command::new(java_path);
 
-  let mut java_info = JavaInfo::default();
-  java_info.path = java_path.to_owned();
+  let mut java_info = JavaInfo {
+    path: java_path.to_owned(),
+    ..Default::default()
+  };
 
   match java_cmd
     .args(["-XshowSettings:properties", "-version"])
