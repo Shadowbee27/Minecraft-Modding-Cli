@@ -1,7 +1,14 @@
+use std::path::PathBuf;
+
 use super::Java;
 
-#[derive(Debug, Clone)]
-pub struct Java25 {}
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Java25 {
+  pub version: String,
+  pub vendor: String,
+  pub arch: String,
+  pub path: PathBuf,
+}
 
 impl Java for Java25 {
   fn install() -> color_eyre::eyre::Result<()> {

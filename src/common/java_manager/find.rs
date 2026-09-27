@@ -2,14 +2,18 @@ use color_eyre::Result;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::PathBuf;
 
-use crate::common::java_manager::java_paths::{FILTERS, JavaPath, get_possible_paths};
+use crate::common::java_manager::{
+  check::check_javas,
+  java_paths::{FILTERS, JavaPath, get_possible_paths},
+};
 
 use super::JavaVersion;
 
 pub fn find_javas() -> Result<Vec<JavaVersion>> {
   let java_paths = get_possible_paths();
-  let _check_paths = scan(java_paths)?;
-  unimplemented!()
+  let check_paths = scan(java_paths)?;
+  let javas = check_javas(check_paths);
+  Ok(javas)
 }
 
 pub fn scan(possible_paths: Vec<JavaPath>) -> Result<Vec<PathBuf>> {
@@ -35,5 +39,10 @@ mod tests {
     let java_paths = get_possible_paths();
     let check_paths = scan(java_paths).unwrap();
     dbg!(check_paths);
+  }
+
+  #[test]
+  fn find_javas_test() {
+    dbg!(find_javas().unwrap());
   }
 }
