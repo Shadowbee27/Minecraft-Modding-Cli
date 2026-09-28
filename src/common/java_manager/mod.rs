@@ -25,6 +25,16 @@ pub enum JavaVersion {
 
 impl JavaVersion {
   pub fn from_java_info(java_info: &JavaInfo) -> Result<JavaVersion> {
+    dbg!(
+      java_info
+        .java_runtime_version
+        .split_once(".")
+        .wrap_err("Invalid Java version {java_info.java_runtime_version}")?
+        .0
+        .parse::<i32>()
+        .unwrap()
+    );
+
     let java_ver: JavaVersion = match java_info
       .java_runtime_version
       .split_once(".")
@@ -33,7 +43,8 @@ impl JavaVersion {
       .parse::<i32>()
       .wrap_err("Invalid Java version {java_info.java_runtime_version}")?
     {
-      8 => JavaVersion::JAVA8(Java8 {
+      // Example 1.8.0_504-b01
+      1 | 8 => JavaVersion::JAVA8(Java8 {
         version: java_info.java_runtime_version.to_owned(),
         vendor: java_info.java_vendor.to_owned(),
         arch: java_info.os_arch.to_owned(),
