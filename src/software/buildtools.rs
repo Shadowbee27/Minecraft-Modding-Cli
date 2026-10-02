@@ -5,7 +5,7 @@ use tokio::runtime::Runtime;
 
 use crate::{
   common::{download::download_file, maven::get_versions},
-  software::SupportedVersion,
+  software::{McVersion, SupportedVersion},
 };
 
 const DOWNLOAD_URL: &str =
@@ -42,6 +42,7 @@ pub fn get_mc_versions() -> Result<Vec<SupportedVersion>> {
   let mut supported_ver = Vec::new();
   for ver in versions {
     supported_ver.push(SupportedVersion {
+      date: McVersion::get_date(&ver)?,
       version: ver.to_owned(),
       stable: true,
     });

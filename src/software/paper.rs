@@ -68,15 +68,9 @@ impl SeverSoftware for Paper {
     for i in versions.versions {
       for v in i.1 {
         if v.contains('-') {
-          versions_vec.push(SupportedVersion {
-            version: v,
-            stable: false,
-          });
+          versions_vec.push(SupportedVersion::from_string_bool(v, false));
         } else {
-          versions_vec.push(SupportedVersion {
-            version: v,
-            stable: true,
-          });
+          versions_vec.push(SupportedVersion::from_string_bool(v, true));
         }
       }
     }

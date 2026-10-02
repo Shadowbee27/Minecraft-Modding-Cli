@@ -1,14 +1,27 @@
-use color_eyre::Result;
+use color_eyre::{
+  Result,
+  eyre::{ContextCompat, Ok, eyre},
+};
+use date::Date;
 use serde::{Deserialize, Serialize};
-use std::{fmt::Display, path::Path};
+use std::{fmt::Display, path::Path, str::FromStr};
 use strum::EnumIter;
 
 use crate::{
   config::project_conf::ProjectConfig,
   software::{
-    babric::Babric, bukkit::Bukkit, fabric::Fabric, folia::Folia, forge::Forge,
-    legacy_fabric::LegacyFabric, neoforge::NeoForge, paper::Paper, purpur::Purpur, quilt::Quilt,
-    spiggot::Spiggot, vanilla::Vanilla,
+    babric::Babric,
+    bukkit::Bukkit,
+    fabric::Fabric,
+    folia::Folia,
+    forge::Forge,
+    legacy_fabric::LegacyFabric,
+    neoforge::NeoForge,
+    paper::Paper,
+    purpur::Purpur,
+    quilt::Quilt,
+    spiggot::Spiggot,
+    vanilla::{Vanilla, get_vanilla_metadata},
   },
 };
 
@@ -48,8 +61,19 @@ pub enum ServerSoftware {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SupportedVersion {
+  pub date: Date,
   pub version: String, // semver can't be used thx to minecraft
   pub stable: bool,
+}
+
+impl SupportedVersion {
+  pub fn from_string_bool(ver: String, stable: bool) -> Self {
+    SupportedVersion {
+      date: McVersion::get_date(&ver).unwrap(),
+      version: ver,
+      stable,
+    }
+  }
 }
 
 impl std::fmt::Display for SupportedVersion {
@@ -59,7 +83,42 @@ impl std::fmt::Display for SupportedVersion {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct McVersion(pub String);
+pub struct McVersion(pub String, pub Date);
+
+impl McVersion {
+  pub fn form_string(version: String) -> Result<Self> {
+    let date = McVersion::get_date(&version)?;
+
+    Ok(McVersion(version, date))
+  }
+
+  pub fn get_date<T>(mc_version: &T) -> Result<Date>
+  where
+    std::string::String: PartialEq<T>,
+  {
+    let meta = get_vanilla_metadata()?;
+
+    let mut date = Date::MIN;
+
+    for v in meta.versions {
+      if &v.id == mc_version {
+        let date_time = v
+          .release_time
+          .split_once("T")
+          .wrap_err("Failed to parse Date")?
+          .0;
+        date = Date::from_str(date_time)?;
+        break;
+      }
+    }
+
+    if date == Date::MIN {
+      return Err(eyre!("Unknown Minecraft version"));
+    }
+
+    Ok(date)
+  }
+}
 
 pub trait SeverSoftware {
   fn update(&mut self) -> Result<()>;

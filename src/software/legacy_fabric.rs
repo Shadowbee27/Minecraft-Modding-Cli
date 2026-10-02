@@ -51,10 +51,7 @@ pub struct LegacyFabric {
 
 impl LegacyFabricGameVersions {
   pub fn to_supported_version(&self) -> SupportedVersion {
-    SupportedVersion {
-      version: self.version.clone(),
-      stable: self.stable,
-    }
+    SupportedVersion::from_string_bool(self.version.clone(), self.stable)
   }
 }
 

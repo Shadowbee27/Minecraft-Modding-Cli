@@ -94,10 +94,7 @@ impl SeverSoftware for Forge {
       .map(|v| {
         let version = v.split_once("-").expect("Failed to split version").0;
 
-        SupportedVersion {
-          version: version.to_owned(),
-          stable: true,
-        }
+        SupportedVersion::from_string_bool(version.to_owned(), true)
       })
       .collect::<Vec<SupportedVersion>>();
 

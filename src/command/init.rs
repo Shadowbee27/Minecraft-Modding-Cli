@@ -141,7 +141,8 @@ fn try_get_server_software(
       loop {
         if part.chars().next().unwrap().is_numeric() {
           mc_ver = match Version::parse(&part) {
-            Ok(v) => Some(McVersion(v.to_string())),
+            Ok(v) => Some(McVersion::form_string(v.to_string())?),
+
             Err(_) => None,
           };
           break;

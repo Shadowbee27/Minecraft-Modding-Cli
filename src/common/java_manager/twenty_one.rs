@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use super::Java;
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Java21 {
   pub version: String,
   pub vendor: String,

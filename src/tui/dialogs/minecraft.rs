@@ -58,7 +58,7 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
       "Esc to cancel",
     ) {
       Ok(ans) => match ans {
-        McVersionQuestion::Version(v) => return color_eyre::eyre::Ok(McVersion(v.version)),
+        McVersionQuestion::Version(v) => return color_eyre::eyre::Ok(McVersion(v.version, v.date)),
         McVersionQuestion::ShowUnstable(_) => {
           show_unstable = !show_unstable;
           question = McVersionQuestion::from_supported_version(mc_versions.clone(), show_unstable);
@@ -95,9 +95,9 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
     }
   }
 
-  color_eyre::eyre::Ok(McVersion(single_choice_fallback(
+  color_eyre::eyre::Ok(McVersion::form_string(single_choice_fallback(
     mc_versions.par_iter().map(|v| v.version.clone()).collect(),
     "Which Minecraft version do you want to use?",
     "Leave empty to cancel",
-  )?))
+  )?)?)
 }

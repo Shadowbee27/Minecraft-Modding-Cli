@@ -34,16 +34,18 @@ struct VanillaServerDownloadMetadata {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct VanillaMetadata {
-  versions: Vec<VanillaVersions>,
+pub struct VanillaMetadata {
+  pub versions: Vec<VanillaVersions>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct VanillaVersions {
-  id: String,
+pub struct VanillaVersions {
+  pub id: String,
   #[serde(rename(deserialize = "type"))]
-  version_type: String,
-  url: String,
+  pub version_type: String,
+  pub url: String,
+  #[serde(rename(deserialize = "releaseTime"))]
+  pub release_time: String,
 }
 
 impl VanillaMetadata {
@@ -53,10 +55,7 @@ impl VanillaMetadata {
     for v in self.versions.clone() {
       let stable = v.version_type == "release";
 
-      supported_versions.push(SupportedVersion {
-        version: v.id,
-        stable,
-      });
+      supported_versions.push(SupportedVersion::from_string_bool(v.id, stable));
     }
     supported_versions
   }
@@ -115,7 +114,7 @@ impl SeverSoftware for Vanilla {
   }
 }
 
-fn get_vanilla_metadata() -> color_eyre::Result<VanillaMetadata> {
+pub fn get_vanilla_metadata() -> color_eyre::Result<VanillaMetadata> {
   let client = BClient::new();
   Ok(client.get(VANILLA_URL).send()?.json::<VanillaMetadata>()?)
 }

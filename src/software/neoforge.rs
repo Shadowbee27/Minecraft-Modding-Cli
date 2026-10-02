@@ -126,35 +126,20 @@ fn convert_neo_maven_version(neo_versions: Vec<String>) -> Result<Vec<(Supported
           .split_once('.')
           .ok_or_eyre(format!("Failed to split snapshot: {ver}"))?;
 
-        SupportedVersion {
-          version: mc_version_string.to_owned(),
-          stable,
-        }
+        SupportedVersion::from_string_bool(mc_version_string.to_owned(), stable)
       } else if major >= 26 {
         // Minecraft 26+
         if patch > 0 {
-          SupportedVersion {
-            version: format!("{}.{}.{}", major, minor, patch),
-            stable,
-          }
+          SupportedVersion::from_string_bool(format!("{}.{}.{}", major, minor, patch), stable)
         } else {
-          SupportedVersion {
-            version: format!("{}.{}", major, minor),
-            stable,
-          }
+          SupportedVersion::from_string_bool(format!("{}.{}", major, minor), stable)
         }
       } else {
         // Legacy 1.X formatting (20.2 -> 1.20.2, 21.0 -> 1.21)
         if minor == 0 {
-          SupportedVersion {
-            version: format!("1.{}", major),
-            stable,
-          }
+          SupportedVersion::from_string_bool(format!("1.{}", major), stable)
         } else {
-          SupportedVersion {
-            version: format!("1.{}.{}", major, minor),
-            stable,
-          }
+          SupportedVersion::from_string_bool(format!("1.{}.{}", major, minor), stable)
         }
       };
 

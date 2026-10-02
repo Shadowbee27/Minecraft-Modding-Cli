@@ -42,10 +42,7 @@ impl PurpurMCInfo {
   pub fn to_supported_version(&self) -> Vec<SupportedVersion> {
     let mut supported_version = Vec::new();
     for v in self.versions.clone() {
-      supported_version.push(SupportedVersion {
-        version: v,
-        stable: true,
-      });
+      supported_version.push(SupportedVersion::from_string_bool(v, true));
     }
     supported_version.reverse(); // needed as versions are provided older -> newer
     supported_version

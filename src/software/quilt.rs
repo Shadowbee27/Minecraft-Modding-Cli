@@ -32,10 +32,7 @@ struct QuiltMeta {
 
 impl QuiltMetaGame {
   fn to_supported_versions(&self) -> SupportedVersion {
-    SupportedVersion {
-      version: self.version.clone(),
-      stable: self.stable,
-    }
+    SupportedVersion::from_string_bool(self.version.clone(), self.stable)
   }
 }
 
