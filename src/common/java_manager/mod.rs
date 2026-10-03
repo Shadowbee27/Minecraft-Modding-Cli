@@ -119,31 +119,19 @@ impl JavaVersion {
   }
 
   pub fn is_java8(&self) -> bool {
-    match self {
-      Self::JAVA8(_) => true,
-      _ => false,
-    }
+    matches!(self, Self::JAVA8(_))
   }
 
   pub fn is_java17(&self) -> bool {
-    match self {
-      Self::JAVA17(_) => true,
-      _ => false,
-    }
+    matches!(self, Self::JAVA17(_))
   }
 
   pub fn is_java21(&self) -> bool {
-    match self {
-      Self::JAVA21(_) => true,
-      _ => false,
-    }
+    matches!(self, Self::JAVA21(_))
   }
 
   pub fn is_java25(&self) -> bool {
-    match self {
-      Self::JAVA25(_) => true,
-      _ => false,
-    }
+    matches!(self, Self::JAVA25(_))
   }
 
   pub fn from_java_info(java_info: &JavaInfo) -> Result<JavaVersion> {

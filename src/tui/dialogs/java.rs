@@ -25,9 +25,7 @@ impl<'a> JavaSelect<'a> {
     let mut java_select = Vec::new();
 
     for j in javas {
-      if show_unstable {
-        java_select.push(JavaSelect::Java(j));
-      } else if j.is_stable(mc_version) {
+      if show_unstable || j.is_stable(mc_version) {
         java_select.push(JavaSelect::Java(j));
       }
     }
@@ -112,42 +110,37 @@ pub fn select_java_version_for_mc_version(
 }
 
 pub fn select_java_version() -> Result<JavaVersion> {
-  loop {
-    match single_choice(
-      JavaVersion::iter().map(|j| j.print()).collect(),
-      "Which Java version do you want to install?",
-      "Esc to cancel",
-    ) {
-      Ok(ans) => return JavaVersion::form_string(&ans),
-      Err(e) => match e {
-        InquireError::NotTTY => {
-          eprintln!(
-            "Terminal is not functional for TUI : ({})",
-            e.to_string().color(Color::Red).bold()
-          );
-          break;
-        }
-        InquireError::Custom(e) => {
-          eprintln!(
-            "Unknown Error: ({})",
-            e.to_string().color(Color::Red).bold()
-          );
-          break;
-        }
-        InquireError::IO(e) => {
-          eprintln!(
-            "IO Error: ({}). Using Fallback",
-            e.to_string().color(Color::Red).bold()
-          );
-          break;
-        }
-        InquireError::InvalidConfiguration(_) => unreachable!(),
-        InquireError::OperationCanceled | InquireError::OperationInterrupted => {
-          eprintln!("Operation canceled by user");
-          exit(1)
-        }
-      },
-    }
+  match single_choice(
+    JavaVersion::iter().map(|j| j.print()).collect(),
+    "Which Java version do you want to install?",
+    "Esc to cancel",
+  ) {
+    Ok(ans) => return JavaVersion::form_string(&ans),
+    Err(e) => match e {
+      InquireError::NotTTY => {
+        eprintln!(
+          "Terminal is not functional for TUI : ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::Custom(e) => {
+        eprintln!(
+          "Unknown Error: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::IO(e) => {
+        eprintln!(
+          "IO Error: ({}). Using Fallback",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::InvalidConfiguration(_) => unreachable!(),
+      InquireError::OperationCanceled | InquireError::OperationInterrupted => {
+        eprintln!("Operation canceled by user");
+        exit(1)
+      }
+    },
   }
 
   single_choice_fallback(
