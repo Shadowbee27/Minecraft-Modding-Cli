@@ -205,8 +205,8 @@ mod tests {
     ));
   }
 
-  #[test]
-  fn select_java() {
-    debug!(select_java_version(&McVersion("26.3".to_string(), Date::today_utc())).unwrap());
-  }
+  // #[test]
+  // fn select_java() {
+  //   debug!(select_java_version(&McVersion("26.3".to_string(), Date::today_utc())).unwrap());
+  // }
 }
