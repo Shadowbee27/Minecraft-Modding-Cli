@@ -124,14 +124,15 @@ fn get_purpur_versions(mc_version: &str) -> color_eyre::Result<PurpurVersionInfo
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn purpur_mc_version_meta() {
-    let _ = dbg!(get_purpur_mc_versions()).unwrap();
+    let _ = debug!(get_purpur_mc_versions()).unwrap();
   }
 
   #[test]
   fn purpur_version_meta() {
-    dbg!(get_purpur_versions("26.2")).unwrap();
+    debug!(get_purpur_versions("26.2")).unwrap();
   }
 }

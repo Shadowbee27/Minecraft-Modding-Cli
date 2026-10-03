@@ -9,12 +9,13 @@ use std::{
 
 use crate::{
   config::mod_index::{ModMeta, ModsIndex},
+  debug,
   mod_source::{ModSource, modrinth::api::get_version_from_hash},
   tui::dialogs::mod_source::preferred_mod_source,
 };
 
 pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
-  dbg!(&index);
+  debug!(&index);
   let files = read_dir(&index.path)?;
 
   let mut jars: Vec<DirEntry> = Vec::new();
@@ -50,7 +51,7 @@ pub fn index_mods(index: &mut ModsIndex) -> Result<()> {
     })
     .collect();
 
-  dbg!(time.elapsed());
+  debug!(time.elapsed());
 
   index.mod_meta = Some(mod_meta_vec);
   Ok(())

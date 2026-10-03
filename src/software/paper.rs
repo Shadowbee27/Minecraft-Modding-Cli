@@ -151,14 +151,15 @@ fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn paper_metadata() {
-    dbg!(get_paper_metadata()).unwrap();
+    debug!(get_paper_metadata()).unwrap();
   }
 
   #[test]
   fn paper_supported_version() {
-    dbg!(Paper::get_supported_minecraft_versions().unwrap());
+    debug!(Paper::get_supported_minecraft_versions().unwrap());
   }
 }

@@ -134,17 +134,18 @@ fn get_vanilla_version_metadata(
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   const METADATA: &str =
     "https://piston-meta.mojang.com/v1/packages/dc69be58cf16ad99f4b1ae7360c9a29c8c819ca5/26.2.json";
 
   #[test]
   fn vanilla_metadata() {
-    dbg!(get_vanilla_metadata()).unwrap();
+    debug!(get_vanilla_metadata()).unwrap();
   }
 
   #[test]
   fn vanilla_version_metadata() {
-    dbg!(get_vanilla_version_metadata(&METADATA.to_string())).unwrap();
+    debug!(get_vanilla_version_metadata(&METADATA.to_string())).unwrap();
   }
 }

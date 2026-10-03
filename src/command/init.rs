@@ -13,6 +13,7 @@ use crate::{
     mod_index::ModsIndex,
     project_conf::{LaunchArgs, PROJECT_CONFIG_VERSION, ProjectConfig},
   },
+  debug,
   mod_source::index::index_mods,
   software::{McVersion, ServerSoftware},
   tui::dialogs::{minecraft::mc_version_select, software::server_software_selector},
@@ -42,8 +43,8 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     }
   }
 
-  dbg!(&jar);
-  dbg!(&dirs);
+  debug!(&jar);
+  debug!(&dirs);
 
   // scan for serversoftware
 
@@ -76,8 +77,8 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   }
   serversoftware.set_flavor_version(&mc_version)?;
 
-  dbg!(&mc_version);
-  dbg!(&serversoftware);
+  debug!(&mc_version);
+  debug!(&serversoftware);
 
   // create project config
 
@@ -101,7 +102,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
 
     if exists(dir.join(mod_dir))? {
       index_mods(&mut index)?;
-      dbg!(&index);
+      debug!(&index);
       index.write_conf()?;
     }
   }
@@ -113,7 +114,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
 fn try_get_server_software(
   file_name: &String,
 ) -> Result<(Option<ServerSoftware>, Option<McVersion>)> {
-  dbg!(&file_name);
+  debug!(&file_name);
   let serversoftwares = Vec::from_iter(ServerSoftware::iter());
 
   let mut found_software = Vec::new();
@@ -130,7 +131,7 @@ fn try_get_server_software(
     found_software.first().cloned()
   };
 
-  dbg!(&server_software);
+  debug!(&server_software);
 
   let split_file_name = file_name.split("-");
   let mut mc_ver: Option<McVersion> = None;
@@ -155,6 +156,6 @@ fn try_get_server_software(
     }
   }
 
-  dbg!(&mc_ver);
+  debug!(&mc_ver);
   Ok((server_software, mc_ver))
 }

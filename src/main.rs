@@ -1,7 +1,7 @@
 use clap::*;
 use color_eyre::Result;
 
-use crate::command::{init, new, run};
+use crate::command::{init, java, new, run};
 
 pub mod command;
 pub mod common;
@@ -22,7 +22,24 @@ enum BaseAction {
   Run(run::RunArgs),
   Init(init::InitArgs),
   New(new::CreateNewArgs),
-  // TODO: Update(software & mods), Install, ...
+  #[command(subcommand)]
+  Java(java::JavaManagerArgs), // TODO: Update(software & mods), Install, ...
+}
+
+#[macro_export]
+macro_rules! debug {
+    ($($e:expr),+) => {
+        {
+            #[cfg(debug_assertions)]
+            {
+                dbg!($($e),+)
+            }
+            #[cfg(not(debug_assertions))]
+            {
+                ($($e),+)
+            }
+        }
+    };
 }
 
 fn main() -> Result<()> {
@@ -43,6 +60,7 @@ fn main() -> Result<()> {
     BaseAction::Init(initargs) => init::init_dir(initargs)?,
     BaseAction::New(newargs) => new::create_new_server(newargs)?,
     BaseAction::Run(runargs) => run::run_server(runargs)?,
+    BaseAction::Java(javamanagerargs) => java::java_manager(javamanagerargs)?,
   }
   Ok(())
 }

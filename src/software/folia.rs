@@ -154,19 +154,20 @@ fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn folia_metadata() {
-    dbg!(get_folia_metadata()).unwrap();
+    debug!(get_folia_metadata()).unwrap();
   }
 
   #[test]
   fn folia_supported_version() {
-    dbg!(Folia::get_supported_minecraft_versions().unwrap());
+    debug!(Folia::get_supported_minecraft_versions().unwrap());
   }
 
   #[test]
   fn test_get_builds() {
-    dbg!(get_builds("26.2").unwrap());
+    debug!(get_builds("26.2").unwrap());
   }
 }

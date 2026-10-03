@@ -162,10 +162,11 @@ fn get_fabric_info() -> color_eyre::Result<FabricInfo> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn fabric_info_test() {
     let result = get_fabric_info();
-    dbg!(result).unwrap();
+    debug!(result).unwrap();
   }
 }

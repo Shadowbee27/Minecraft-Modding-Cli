@@ -4,6 +4,8 @@ use reqwest::Client;
 use reqwest::header;
 use serde::Deserialize;
 
+use crate::debug;
+
 // Structs were created with AI
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +38,7 @@ pub async fn get_versions<T: std::fmt::Display, G: std::fmt::Display>(
   base_url: G,
 ) -> Result<MavenMetadata> {
   let fetch_url = format!("{base_url}/{group_id}/maven-metadata.xml");
-  dbg!(&fetch_url);
+  debug!(&fetch_url);
   let mut headers = header::HeaderMap::new();
   headers.insert(
     header::CONTENT_TYPE,
@@ -48,9 +50,9 @@ pub async fn get_versions<T: std::fmt::Display, G: std::fmt::Display>(
     .build()?;
   let result = client.get(fetch_url).send().await?;
   let raw = result.text().await?;
-  dbg!(&raw);
+  debug!(&raw);
   let meta: MavenMetadata = from_str(&raw)?;
-  dbg!(&meta);
+  debug!(&meta);
   Ok(meta)
 }
 

@@ -33,16 +33,17 @@ pub fn scan(possible_paths: Vec<JavaPath>) -> Result<Vec<PathBuf>> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn java_paths() {
     let java_paths = get_possible_paths();
     let check_paths = scan(java_paths).unwrap();
-    dbg!(check_paths);
+    debug!(check_paths);
   }
 
   #[test]
   fn find_javas_test() {
-    dbg!(find_javas().unwrap());
+    debug!(find_javas().unwrap());
   }
 }

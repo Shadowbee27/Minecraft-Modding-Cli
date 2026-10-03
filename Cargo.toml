@@ -26,7 +26,7 @@ reqwest = { version = "0.13.5", features = ["blocking", "stream", "json"] }
 semver = { version = "1.0.28", features = ["serde"] }
 serde =  { version = "1.0.229", features = ["derive"] }
 strum = "0.28.0"
-tokio = { version = "1.53.1", features = ["full"] }
+tokio = { version = "1.53.2", features = ["full"] }
 toml = "1.1.6"
 walkdir = "2.5.0"
 sha1 = "0.11.0"
@@ -36,3 +36,9 @@ date-rs = "1.6.2"
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.100.0"
+
+[profile.release]
+opt-level = 3            # Use slightly better optimizations.
+debug-assertions = false
+strip = "debuginfo"
+debug = false

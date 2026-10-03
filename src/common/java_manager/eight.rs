@@ -11,7 +11,7 @@ pub struct Java8 {
 }
 
 impl Java for Java8 {
-  fn install() -> color_eyre::eyre::Result<()> {
+  fn install(self) -> color_eyre::eyre::Result<()> {
     unimplemented!()
   }
 }

@@ -5,7 +5,7 @@ use color_eyre::{
 use rayon::prelude::*;
 use std::{path::PathBuf, process::Command};
 
-use crate::common::java_manager::JavaVersion;
+use crate::{common::java_manager::JavaVersion, debug};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct JavaInfo {
@@ -53,19 +53,19 @@ fn get_jvm_info(java_path: &PathBuf) -> Result<JavaInfo> {
           let (_, java_runtime_version) = line
             .split_once("=")
             .wrap_err("Failed to parse java.runtime.version")?;
-          dbg!(java_runtime_version.trim());
+          debug!(java_runtime_version.trim());
           java_info.java_runtime_version = java_runtime_version.trim().to_string();
         } else if line.contains("java.vendor") && java_info.java_vendor.is_empty() {
           let (_, java_vendor) = line
             .split_once("=")
             .wrap_err("Failed to parse java.runtime.version")?;
-          dbg!(java_vendor.trim());
+          debug!(java_vendor.trim());
           java_info.java_vendor = java_vendor.trim().to_string();
         } else if line.contains("os.arch") && java_info.os_arch.is_empty() {
           let (_, os_arch) = line
             .split_once("=")
             .wrap_err("Failed to parse java.runtime.version")?;
-          dbg!(os_arch.trim());
+          debug!(os_arch.trim());
           java_info.os_arch = os_arch.trim().to_string();
         }
       }
@@ -87,7 +87,7 @@ mod tests {
 
   #[test]
   fn name() {
-    dbg!(check_javas(vec![PathBuf::from(
+    debug!(check_javas(vec![PathBuf::from(
       "/usr/lib/jvm/java-8-openjdk/jre/bin/java",
     )]));
   }

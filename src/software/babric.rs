@@ -162,10 +162,11 @@ fn get_babric_info() -> color_eyre::Result<BabricInfo> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::debug;
 
   #[test]
   fn babric_info_test() {
     let result = get_babric_info();
-    dbg!(result).unwrap();
+    debug!(result).unwrap();
   }
 }

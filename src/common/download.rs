@@ -2,6 +2,7 @@
 // Taken form https://gist.github.com/Tapanhaz/096e299bf060607b572d700e89a62529 and modified
 //
 
+use crate::debug;
 use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
@@ -20,7 +21,7 @@ pub async fn download_file<
   url: T,
   path: G,
 ) -> color_eyre::Result<()> {
-  dbg!(url);
+  debug!(url);
 
   // Reqwest setup
   let res = client.get(url).send().await?;

@@ -5,9 +5,10 @@ use color_eyre::{
   eyre::{Context, ContextCompat, eyre},
 };
 use date::Date;
+use strum::EnumIter;
 
 use crate::{
-  common::java_manager::find::find_javas, software::McVersion,
+  common::java_manager::find::find_javas, debug, software::McVersion,
   tui::dialogs::java::select_java_version_for_mc_version,
 };
 
@@ -23,12 +24,12 @@ pub mod seventeen;
 pub mod twenty_five;
 pub mod twenty_one;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, EnumIter)]
 pub enum JavaVersion {
   JAVA8(Java8),
   JAVA17(Java17),
-  JAVA25(Java25),
   JAVA21(Java21),
+  JAVA25(Java25),
 }
 
 impl fmt::Display for JavaVersion {
@@ -71,23 +72,50 @@ impl fmt::Display for JavaVersion {
 }
 
 impl JavaVersion {
+  pub fn install(self) -> Result<()> {
+    match self {
+      JavaVersion::JAVA8(j) => j.install(),
+      JavaVersion::JAVA17(j) => j.install(),
+      JavaVersion::JAVA21(j) => j.install(),
+      JavaVersion::JAVA25(j) => j.install(),
+    }
+  }
+
+  pub fn form_string(version: &str) -> Result<Self> {
+    match version {
+      "Java 8" => Ok(JavaVersion::JAVA8(Java8::default())),
+      "Java 17" => Ok(JavaVersion::JAVA17(Java17::default())),
+      "Java 21" => Ok(JavaVersion::JAVA21(Java21::default())),
+      "Java 25" => Ok(JavaVersion::JAVA25(Java25::default())),
+      _ => Err(eyre!("Please use 'Java $VERSION'")),
+    }
+  }
+
+  pub fn print(&self) -> String {
+    match self {
+      JavaVersion::JAVA8(_) => "Java 8".to_string(),
+      JavaVersion::JAVA17(_) => "Java 17".to_string(),
+      JavaVersion::JAVA25(_) => "Java 25".to_string(),
+      JavaVersion::JAVA21(_) => "Java 21".to_string(),
+    }
+  }
   pub fn is_stable(&self, mc_version: &McVersion) -> bool {
-    return if &mc_version.1 < Date::from_str("2021-05-12").unwrap() {
+    if mc_version.1 < Date::from_str("2021-05-12").unwrap() {
       // Java 8
       self.is_java8()
-    } else if &mc_version.1 < Date::from_str("2021-09-15").unwrap() {
+    } else if mc_version.1 < Date::from_str("2021-09-15").unwrap() {
       // Java 16
       self.is_java17()
-    } else if &mc_version.1 < Date::from_str("2024-04-03").unwrap() {
+    } else if mc_version.1 < Date::from_str("2024-04-03").unwrap() {
       // Java 17
       self.is_java17()
-    } else if &mc_version.1 < Date::from_str("2025-12-16").unwrap() {
+    } else if mc_version.1 < Date::from_str("2025-12-16").unwrap() {
       // Java 21
       self.is_java21()
     } else {
       // Java 25
       self.is_java25()
-    };
+    }
   }
 
   pub fn is_java8(&self) -> bool {
@@ -119,7 +147,7 @@ impl JavaVersion {
   }
 
   pub fn from_java_info(java_info: &JavaInfo) -> Result<JavaVersion> {
-    dbg!(
+    debug!(
       java_info
         .java_runtime_version
         .split_once(".")
@@ -170,7 +198,7 @@ impl JavaVersion {
 }
 
 pub trait Java {
-  fn install() -> Result<()>;
+  fn install(self) -> Result<()>;
 }
 
 pub fn select_java_version(mc_version: &McVersion) -> Result<JavaVersion> {
@@ -183,7 +211,7 @@ mod tests {
 
   #[test]
   fn is_stable() {
-    dbg!(JavaVersion::is_stable(
+    debug!(JavaVersion::is_stable(
       &JavaVersion::JAVA25(Java25::default()),
       &McVersion("26.3".to_string(), Date::today_utc()),
     ));
@@ -191,6 +219,6 @@ mod tests {
 
   #[test]
   fn select_java() {
-    dbg!(select_java_version(&McVersion("26.3".to_string(), Date::today_utc())).unwrap());
+    debug!(select_java_version(&McVersion("26.3".to_string(), Date::today_utc())).unwrap());
   }
 }
