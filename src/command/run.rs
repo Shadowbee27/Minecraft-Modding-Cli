@@ -5,8 +5,9 @@ use std::path::PathBuf;
 use crate::config::project_conf::ProjectConfig;
 
 #[derive(Parser, Debug, Clone)]
-#[command(author, version, about)]
+#[command(version, about)]
 pub struct RunArgs {
+  /// The directory that contains the server, default "."
   dir: Option<PathBuf>,
 }
 

@@ -11,7 +11,7 @@ pub mod software;
 pub mod tui;
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
 struct Args {
   #[command(subcommand)]
   action: BaseAction,
@@ -19,10 +19,14 @@ struct Args {
 
 #[derive(clap::Subcommand, Debug, Clone)]
 enum BaseAction {
+  /// Run a server
   Run(run::RunArgs),
+  /// Initialize a existing directory
   Init(init::InitArgs),
+  /// Create a new server
   New(new::CreateNewArgs),
   #[command(subcommand)]
+  /// Manage java
   Java(java::JavaManagerArgs), // TODO: Update(software & mods), Install, ...
 }
 

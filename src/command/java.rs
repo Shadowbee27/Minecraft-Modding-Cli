@@ -9,9 +9,13 @@ use crate::{
 
 #[derive(clap::Subcommand, Debug, Clone)]
 pub enum JavaManagerArgs {
+  /// List all java installs
   List(()),
+  /// Set the java used for a specific server
   Set(JavaManagerSetArgs),
+  /// Set the default java
   SetDefault(JavaManagerSetDefaultArgs),
+  /// Install a java version
   Install(()),
 }
 

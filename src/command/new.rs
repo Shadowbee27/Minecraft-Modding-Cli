@@ -15,9 +15,10 @@ use crate::{
 use crate::{config::project_conf::LaunchArgs, software::ServerSoftware};
 
 #[derive(Parser, Debug, Clone)]
-#[command(author, version, about)]
+#[command(version, about)]
 pub struct CreateNewArgs {
-  pub name: PathBuf,
+  /// The directory of the new server
+  pub dir: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -27,8 +28,8 @@ struct ServerDir<'a> {
 }
 
 pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
-  args.name = get_current_full_dir()?.join(args.name); // use full instedt of relitiv path
-  if exists(&args.name)? {
+  args.dir = get_current_full_dir()?.join(args.dir); // use full instedt of relitiv path
+  if exists(&args.dir)? {
     return Err(eyre!("Directory is not empty, please use init"));
   }
 
@@ -40,24 +41,24 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
 
   let mut dirs_to_create: Vec<ServerDir> = vec![
     ServerDir {
-      dir: args.name.clone(),
+      dir: args.dir.clone(),
       creation_error: "Error while creating server directory:",
     },
     ServerDir {
-      dir: PathBuf::from(&args.name.join(".mcmc")),
+      dir: PathBuf::from(&args.dir.join(".mcmc")),
       creation_error: "Error while creating mcmc directory:",
     },
   ];
 
   if let Some("mods/") = modding_folder {
     dirs_to_create.push(ServerDir {
-      dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
+      dir: PathBuf::from(&args.dir.join(modding_folder.unwrap())),
       creation_error: "Failed to create mods directory:",
     });
   }
   if let Some("plugins/") = modding_folder {
     dirs_to_create.push(ServerDir {
-      dir: PathBuf::from(&args.name.join(modding_folder.unwrap())),
+      dir: PathBuf::from(&args.dir.join(modding_folder.unwrap())),
       creation_error: "Failed to create plugins directory:",
     });
   }
@@ -76,10 +77,10 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
   };
 
   project_config
-    .save(&args.name)
+    .save(&args.dir)
     .wrap_err("Error while saving project-config file")?;
 
-  server_software.install(project_config, &args.name)?;
+  server_software.install(project_config, &args.dir)?;
 
   println!("Success, new server created");
 

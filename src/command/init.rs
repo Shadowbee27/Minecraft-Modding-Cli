@@ -22,11 +22,12 @@ use crate::{
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
 pub struct InitArgs {
-  pub name: Option<PathBuf>,
+  /// Directory to init, default "."
+  pub dir: Option<PathBuf>,
 }
 
 pub fn init_dir(args: InitArgs) -> Result<()> {
-  let dir = if let Some(dir) = args.name {
+  let dir = if let Some(dir) = args.dir {
     dir
   } else {
     PathBuf::from(".")
