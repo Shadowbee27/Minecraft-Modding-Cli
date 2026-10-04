@@ -74,10 +74,11 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
     mc_version: minecraft_version?.clone(),
     jar_file: String::new(),
     launch_args: LaunchArgs::default(),
+    java_install: None,
   };
 
   project_config
-    .save(&args.dir)
+    .save(&Some(args.dir.clone()))
     .wrap_err("Error while saving project-config file")?;
 
   server_software.install(project_config, &args.dir)?;

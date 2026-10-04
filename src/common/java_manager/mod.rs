@@ -5,6 +5,7 @@ use color_eyre::{
   eyre::{Context, ContextCompat, eyre},
 };
 use date::Date;
+use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
 use crate::{
@@ -24,7 +25,7 @@ pub mod seventeen;
 pub mod twenty_five;
 pub mod twenty_one;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, EnumIter)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, EnumIter, Serialize, Deserialize)]
 pub enum JavaVersion {
   JAVA8(Java8),
   JAVA17(Java17),
@@ -40,7 +41,7 @@ impl fmt::Display for JavaVersion {
         "Java: {}\t| By: {}\t| At: {}\t| For: {}",
         java.version,
         java.vendor,
-        java.path.to_str().unwrap(),
+        java.path.display(),
         java.arch
       ),
       JavaVersion::JAVA17(java) => write!(
@@ -48,7 +49,7 @@ impl fmt::Display for JavaVersion {
         "Java: {}\t| By: {}\t| At: {}\t| For: {}",
         java.version,
         java.vendor,
-        java.path.to_str().unwrap(),
+        java.path.display(),
         java.arch
       ),
       JavaVersion::JAVA25(java) => write!(
@@ -56,7 +57,7 @@ impl fmt::Display for JavaVersion {
         "Java: {}\t| By: {}\t| At: {}\t| For: {}",
         java.version,
         java.vendor,
-        java.path.to_str().unwrap(),
+        java.path.display(),
         java.arch
       ),
       JavaVersion::JAVA21(java) => write!(
@@ -64,7 +65,7 @@ impl fmt::Display for JavaVersion {
         "Java: {}\t| By: {}\t| At: {}\t| For: {}",
         java.version,
         java.vendor,
-        java.path.to_str().unwrap(),
+        java.path.display(),
         java.arch
       ),
     }

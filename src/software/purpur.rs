@@ -74,14 +74,14 @@ impl SeverSoftware for Purpur {
     let download_result = rt.block_on(download_file(
       &client,
       &download_url,
-      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
+      &format!("{}/{}", pdir.display(), file_path),
     ));
 
     pconf.flavor = super::ServerSoftware::PURPUR(self.clone());
     pconf.flavor_version = self.flavor_version.clone();
     pconf.jar_file = file_path;
 
-    pconf.save(pdir)?;
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     download_result
   }

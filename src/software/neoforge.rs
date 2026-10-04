@@ -55,7 +55,7 @@ impl SeverSoftware for NeoForge {
 
     pconf.flavor_version = self.flavor_version.clone();
     pconf.flavor = ServerSoftware::NEOFORGE(self.clone());
-    pconf.save(pdir)?;
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     println!("----- NeoForge NeoForge-Installer output -----");
     let result = cmd.wait_with_output()?;

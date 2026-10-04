@@ -4,7 +4,8 @@ use std::path::PathBuf;
 
 use crate::{
   common::java_manager::{JavaVersion, find::find_javas},
-  tui::dialogs::java::select_java_version,
+  config::project_conf::ProjectConfig,
+  tui::dialogs::java::{select_java_version, select_java_version_for_mc_version},
 };
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -22,7 +23,8 @@ pub enum JavaManagerArgs {
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
 pub struct JavaManagerSetArgs {
-  pub path: PathBuf,
+  /// What server's java install should be changed, can be omitted default "."
+  pub path: Option<PathBuf>,
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -50,8 +52,17 @@ pub fn java_manager_list() -> Result<()> {
   Ok(())
 }
 
-pub fn java_manager_set(_args: JavaManagerSetArgs) -> Result<()> {
-  unimplemented!()
+pub fn java_manager_set(args: JavaManagerSetArgs) -> Result<()> {
+  let mut pconf = ProjectConfig::load_project_config(&args.path)?;
+  let javas = find_javas()?;
+
+  pconf.java_install = Some(select_java_version_for_mc_version(
+    javas,
+    &pconf.mc_version,
+  )?);
+
+  pconf.save(&None)?;
+  Ok(())
 }
 
 pub fn java_manager_set_default(_args: JavaManagerSetDefaultArgs) -> Result<()> {

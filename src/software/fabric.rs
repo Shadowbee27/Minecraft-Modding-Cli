@@ -90,13 +90,13 @@ impl SeverSoftware for Fabric {
     let result = rt.block_on(download_file(
       &client,
       &download_url,
-      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
+      &format!("{}/{}", pdir.display(), file_path),
     ));
 
     pconf.flavor = super::ServerSoftware::FABRIC(self.clone());
     pconf.jar_file = file_path;
 
-    pconf.save(pdir)?;
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     result
   }

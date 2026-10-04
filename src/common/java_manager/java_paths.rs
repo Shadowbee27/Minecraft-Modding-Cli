@@ -222,7 +222,7 @@ impl FILTERS {
           .to_str()
           .unwrap_or_default()
           .starts_with("java-")
-          || d.file_name().to_str().unwrap_or_default() == "java")
+          || d.file_name().display().to_string() == "java")
       {
         javas.append(&mut FILTERS::standard(&d.into_path())?);
       }

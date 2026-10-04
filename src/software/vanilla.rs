@@ -84,7 +84,7 @@ impl SeverSoftware for Vanilla {
     let result = rt.block_on(download_file(
       &client,
       &download_url,
-      &format!("{}/{}", pdir.to_str().unwrap(), file_path),
+      &format!("{}/{}", pdir.display(), file_path),
     ));
 
     self.flavor_version = pconf.mc_version.0.clone();
@@ -92,7 +92,7 @@ impl SeverSoftware for Vanilla {
     pconf.jar_file = file_path;
     pconf.flavor_version = self.flavor_version.clone();
 
-    pconf.save(pdir)?;
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     result
   }

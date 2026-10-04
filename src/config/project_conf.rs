@@ -6,10 +6,13 @@ use semver::{BuildMetadata, Prerelease, Version};
 use serde::{Deserialize, Serialize};
 use std::{
   fs::{self, exists},
-  path::{Path, PathBuf},
+  path::PathBuf,
 };
 
-use crate::software::{McVersion, ServerSoftware};
+use crate::{
+  common::java_manager::JavaVersion,
+  software::{McVersion, ServerSoftware},
+};
 
 pub const PROJECT_CONFIG_PATH: &str = ".mcmc/config.toml";
 pub const PROJECT_CONFIG_VERSION: Version = Version {
@@ -28,6 +31,7 @@ pub struct ProjectConfig {
   pub mc_version: McVersion,
   pub jar_file: String,
   pub launch_args: LaunchArgs,
+  pub java_install: Option<JavaVersion>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -48,10 +52,16 @@ impl Default for LaunchArgs {
 }
 
 impl ProjectConfig {
-  pub fn save(&self, project_dir: &Path) -> Result<()> {
+  pub fn save(&self, project_dir: &Option<PathBuf>) -> Result<()> {
     let serialized = toml::to_string(&self)?;
 
-    fs::write(project_dir.join(PROJECT_CONFIG_PATH), serialized)?;
+    let conf_path = if let Some(prefix) = project_dir {
+      prefix.join(PROJECT_CONFIG_PATH)
+    } else {
+      PathBuf::from(PROJECT_CONFIG_PATH)
+    };
+
+    fs::write(conf_path, serialized)?;
     Ok(())
   }
 

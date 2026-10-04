@@ -39,7 +39,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   for p in WalkDir::new(&dir).into_iter().flatten() {
     if p.file_type().is_dir() {
       dirs.push(p.into_path());
-    } else if p.file_name().to_str().unwrap_or_default().ends_with(".jar") {
+    } else if p.file_name().display().to_string().ends_with(".jar") {
       jar.push(p.into_path());
     }
   }
@@ -61,7 +61,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     mc_version = mc_version_select(&serversoftware)?;
     jar_file = String::new();
   } else {
-    jar_file = jar.first().unwrap().to_str().unwrap().to_string();
+    jar_file = jar.first().unwrap().display().to_string();
     let detection_results = try_get_server_software(&jar_file)?;
 
     if let Some(serv_ver) = detection_results.0 {
@@ -90,9 +90,10 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     mc_version: mc_version.clone(),
     jar_file: jar_file.clone(),
     launch_args: LaunchArgs::default(),
+    java_install: None,
   };
   fs::create_dir_all(dir.join(".mcmc/"))?;
-  pconf.save(&dir)?;
+  pconf.save(&Some(dir.clone()))?;
 
   // index mods
 

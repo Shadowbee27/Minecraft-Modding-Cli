@@ -58,7 +58,7 @@ impl SeverSoftware for Forge {
 
     pconf.flavor = ServerSoftware::FORGE(self.clone());
     pconf.flavor_version = self.flavor_version.clone();
-    pconf.save(pdir)?;
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     println!("----- Forge-Installer output -----");
     let result = cmd.wait_with_output()?;
