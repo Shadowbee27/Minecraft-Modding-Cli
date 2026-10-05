@@ -1,6 +1,5 @@
-use std::path::PathBuf;
-
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 use super::Java;
 
@@ -15,5 +14,9 @@ pub struct Java8 {
 impl Java for Java8 {
   fn install(self) -> color_eyre::eyre::Result<()> {
     unimplemented!()
+  }
+
+  fn as_any(&self) -> &dyn std::any::Any {
+    self
   }
 }

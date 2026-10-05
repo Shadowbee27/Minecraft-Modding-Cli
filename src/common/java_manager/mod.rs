@@ -1,4 +1,4 @@
-use std::{fmt, str::FromStr};
+use std::{any::Any, fmt, str::FromStr};
 
 use color_eyre::{
   Result,
@@ -184,10 +184,19 @@ impl JavaVersion {
 
     Ok(java_ver)
   }
+  pub fn to_java(self) -> Box<dyn Java> {
+    match self {
+      JavaVersion::JAVA8(java) => Box::new(java),
+      JavaVersion::JAVA17(java) => Box::new(java),
+      JavaVersion::JAVA21(java) => Box::new(java),
+      JavaVersion::JAVA25(java) => Box::new(java),
+    }
+  }
 }
 
-pub trait Java {
+pub trait Java: Any {
   fn install(self) -> Result<()>;
+  fn as_any(&self) -> &dyn Any;
 }
 
 pub fn select_java_version(mc_version: &McVersion) -> Result<JavaVersion> {

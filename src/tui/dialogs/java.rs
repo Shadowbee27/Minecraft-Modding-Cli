@@ -1,5 +1,3 @@
-use std::{fmt, process::exit};
-
 use crate::{
   common::java_manager::JavaVersion,
   software::McVersion,
@@ -8,6 +6,7 @@ use crate::{
 use color_eyre::Result;
 use colorful::{Color, Colorful};
 use inquire::InquireError;
+use std::{fmt, process::exit};
 use strum::IntoEnumIterator;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -146,6 +145,47 @@ pub fn select_java_version() -> Result<JavaVersion> {
   single_choice_fallback(
     JavaVersion::iter().collect(),
     "Which Java version do you want to install?",
+    "Leave empty to cancel",
+  )
+}
+
+pub fn select_java(javas: Vec<JavaVersion>) -> Result<JavaVersion> {
+  match single_choice(
+    javas.clone(),
+    "Which Java install do you want to use?",
+    "Esc to cancel",
+  ) {
+    Ok(ans) => return Ok(ans),
+    Err(e) => match e {
+      InquireError::NotTTY => {
+        eprintln!(
+          "Terminal is not functional for TUI : ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::Custom(e) => {
+        eprintln!(
+          "Unknown Error: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::IO(e) => {
+        eprintln!(
+          "IO Error: ({}). Using Fallback",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::InvalidConfiguration(_) => unreachable!(),
+      InquireError::OperationCanceled | InquireError::OperationInterrupted => {
+        eprintln!("Operation canceled by user");
+        exit(1)
+      }
+    },
+  }
+
+  single_choice_fallback(
+    javas,
+    "Which Java install do you want to use?",
     "Leave empty to cancel",
   )
 }
