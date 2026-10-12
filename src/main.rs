@@ -1,7 +1,7 @@
 use clap::*;
 use color_eyre::Result;
 
-use crate::command::{init, java, new, run};
+use crate::command::{completions, init, java, new, run};
 
 pub mod command;
 pub mod common;
@@ -28,6 +28,8 @@ enum BaseAction {
   #[command(subcommand)]
   /// Manage java
   Java(java::JavaManagerArgs), // TODO: Update(software & mods), Install, ...
+  /// Generate autocompletion script
+  Complete(completions::CompletionArgs),
 }
 
 #[macro_export]
@@ -65,6 +67,7 @@ fn main() -> Result<()> {
     BaseAction::New(newargs) => new::create_new_server(newargs)?,
     BaseAction::Run(runargs) => run::run_server(runargs)?,
     BaseAction::Java(javamanagerargs) => java::java_manager(javamanagerargs)?,
+    BaseAction::Complete(completionargs) => completions::completions(completionargs),
   }
   Ok(())
 }
