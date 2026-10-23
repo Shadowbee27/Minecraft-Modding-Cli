@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
 use crate::config::global_conf::get_buildtools_build_dir;
 use crate::config::project_conf::ProjectConfig;
@@ -16,7 +16,8 @@ use crate::software::buildtools::{download_build_tools_jar, get_mc_versions};
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Spiggot {}
 
-impl SeverSoftware for Spiggot {
+impl Software for Spiggot {
+  const NAME: &str = "Spiggot";
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let path = format!(
       "{}/buildtools.jar",

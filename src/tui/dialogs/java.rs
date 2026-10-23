@@ -24,7 +24,7 @@ impl<'a> JavaSelect<'a> {
     let mut java_select = Vec::new();
 
     for j in javas {
-      if show_unstable || j.is_stable(mc_version) {
+      if show_unstable || j.is_stable(mc_version).unwrap() {
         java_select.push(JavaSelect::Java(j));
       }
     }

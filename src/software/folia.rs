@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt, path::Path, process::exit};
 use tokio::runtime::Runtime;
 
-use super::{SeverSoftware, SupportedVersion};
-use crate::common::download::download_file;
+use super::{Software, SupportedVersion};
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor::select_flavor_version;
@@ -27,7 +27,8 @@ pub struct Folia {
 
 // https://fill.papermc.io/swagger-ui/index.html
 
-impl SeverSoftware for Folia {
+impl Software for Folia {
+  const NAME: &str = "Folia";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
     let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;

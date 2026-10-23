@@ -9,11 +9,11 @@ use std::path::Path;
 use std::process::exit;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor;
-use crate::{common::download::download_file, config::project_conf::ProjectConfig};
+use crate::{common::reqwest::download::download_file, config::project_conf::ProjectConfig};
 
 const FABRIC_URL: &str = "https://meta.fabricmc.net/v2/versions";
 const FABRIC_DOWNLOAD_URL: &str = "/loader/";
@@ -65,7 +65,8 @@ impl Default for Fabric {
   }
 }
 
-impl SeverSoftware for Fabric {
+impl Software for Fabric {
+  const NAME: &str = "Fabric";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
 

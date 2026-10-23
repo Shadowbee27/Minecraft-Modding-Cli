@@ -11,9 +11,9 @@ use std::path::Path;
 use std::process::Command;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
-use crate::common::download::download_file;
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 
 const QUILT_URL: &str = "https://meta.quiltmc.org/v3/versions";
@@ -65,7 +65,8 @@ impl QuiltInstallerGetLatest for Vec<QuiltMetaInstaller> {
   }
 }
 
-impl SeverSoftware for Quilt {
+impl Software for Quilt {
+  const NAME: &str = "Quilt";
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let meta = get_quilt_meta()?;
 

@@ -1,9 +1,9 @@
 use color_eyre::Result;
 use std::{path::PathBuf, process::Command};
 
-pub mod download;
 pub mod java_manager;
 pub mod maven;
+pub mod reqwest;
 pub mod safe_delete;
 
 pub fn get_current_full_dir() -> Result<PathBuf> {

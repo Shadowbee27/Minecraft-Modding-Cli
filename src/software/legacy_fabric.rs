@@ -9,10 +9,10 @@ use std::path::Path;
 use std::process::exit;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
 use crate::tui::dialogs::flavor;
-use crate::{common::download::download_file, config::project_conf::ProjectConfig};
+use crate::{common::reqwest::download::download_file, config::project_conf::ProjectConfig};
 
 const LEGACY_FABRIC_URL: &str = "https://meta.legacyfabric.net/v2/versions";
 const LEGACY_FABRIC_DOWNLOAD_URL: &str = "/loader/";
@@ -64,7 +64,8 @@ impl Default for LegacyFabric {
   }
 }
 
-impl SeverSoftware for LegacyFabric {
+impl Software for LegacyFabric {
+  const NAME: &str = "Legacy Farbic";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
     let client = AClient::new();

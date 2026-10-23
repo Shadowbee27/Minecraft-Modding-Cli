@@ -9,9 +9,9 @@ use std::fmt;
 use std::path::Path;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
-use crate::common::download::download_file;
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 
 const PAPER_URL: &str = "https://fill.papermc.io/v3/projects/paper";
@@ -28,7 +28,8 @@ pub struct Paper {
 
 // https://fill.papermc.io/swagger-ui/index.html
 
-impl SeverSoftware for Paper {
+impl Software for Paper {
+  const NAME: &str = "Paper";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
 

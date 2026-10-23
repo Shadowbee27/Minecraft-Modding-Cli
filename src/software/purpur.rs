@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokio::runtime::Runtime;
 
-use super::{SeverSoftware, SupportedVersion};
-use crate::common::download::download_file;
+use super::{Software, SupportedVersion};
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::tui::dialogs::flavor::select_flavor_version;
 
@@ -54,7 +54,8 @@ pub struct Purpur {
   pub flavor_version: String,
 }
 
-impl SeverSoftware for Purpur {
+impl Software for Purpur {
+  const NAME: &str = "Purpur";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
 

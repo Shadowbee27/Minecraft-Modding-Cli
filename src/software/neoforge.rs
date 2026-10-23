@@ -8,9 +8,9 @@ use std::path::Path;
 use std::process::Command;
 use tokio::runtime::Runtime;
 
-use super::{ServerSoftware, SeverSoftware, SupportedVersion};
-use crate::common::download::download_file;
+use super::{ServerSoftware, Software, SupportedVersion};
 use crate::common::maven::get_versions as get_maven_versions;
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::software::McVersion;
 use crate::tui::dialogs::flavor::select_flavor_version;
@@ -22,7 +22,8 @@ pub struct NeoForge {
   pub flavor_version: String,
 }
 
-impl SeverSoftware for NeoForge {
+impl Software for NeoForge {
+  const NAME: &str = "NeoForged";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
 

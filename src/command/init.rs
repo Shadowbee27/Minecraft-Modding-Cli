@@ -1,11 +1,11 @@
 use clap::clap_derive::*;
-use color_eyre::Result;
-use semver::Version;
+use color_eyre::{Result, eyre::ContextCompat};
+// use semver::Version;
 use std::{
   fs::{self, exists},
   path::PathBuf,
 };
-use strum::IntoEnumIterator;
+// use strum::IntoEnumIterator;
 use walkdir::WalkDir;
 
 use crate::{
@@ -62,7 +62,8 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     jar_file = String::new();
   } else {
     jar_file = jar.first().unwrap().display().to_string();
-    let detection_results = try_get_server_software(&jar_file)?;
+    // let detection_results = try_get_server_software(&jar_file)?;
+    let detection_results = (None, None);
 
     if let Some(serv_ver) = detection_results.0 {
       serversoftware = serv_ver;
@@ -84,6 +85,12 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   // create project config
 
   let pconf = ProjectConfig {
+    server_name: dir
+      .iter()
+      .next_back()
+      .wrap_err("Failed to get directory name")?
+      .display()
+      .to_string(),
     config_version: PROJECT_CONFIG_VERSION,
     flavor: serversoftware.clone(),
     flavor_version: String::new(),
@@ -112,52 +119,52 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
   Ok(())
 }
 
-/// This is not reliabil in any way and won't probably work at all
-fn try_get_server_software(
-  file_name: &String,
-) -> Result<(Option<ServerSoftware>, Option<McVersion>)> {
-  debug!(&file_name);
-  let serversoftwares = Vec::from_iter(ServerSoftware::iter());
-
-  let mut found_software = Vec::new();
-
-  for software in serversoftwares {
-    if file_name.contains(software.as_str()) {
-      found_software.push(software);
-    }
-  }
-
-  let server_software = if !(found_software.len() == 1) {
-    None
-  } else {
-    found_software.first().cloned()
-  };
-
-  debug!(&server_software);
-
-  let split_file_name = file_name.split("-");
-  let mut mc_ver: Option<McVersion> = None;
-
-  for part in split_file_name {
-    if part.contains("mc") {
-      let mut part = part.replace("mc", "");
-      loop {
-        if part.chars().next().unwrap().is_numeric() {
-          mc_ver = match Version::parse(&part) {
-            Ok(v) => Some(McVersion::form_string(v.to_string())?),
-
-            Err(_) => None,
-          };
-          break;
-        } else if part.is_empty() {
-          break;
-        } else {
-          part = part.split_at(1).1.to_string();
-        }
-      }
-    }
-  }
-
-  debug!(&mc_ver);
-  Ok((server_software, mc_ver))
-}
+///// This is not reliabil in any way and won't probably work at all
+// fn try_get_server_software(
+//   file_name: &String,
+// ) -> Result<(Option<ServerSoftware>, Option<McVersion>)> {
+//   debug!(&file_name);
+//   let serversoftwares = Vec::from_iter(ServerSoftware::iter());
+//
+//   let mut found_software = Vec::new();
+//
+//   for software in serversoftwares {
+//     if file_name.contains(software.as_str()) {
+//       found_software.push(software);
+//     }
+//   }
+//
+//   let server_software = if !(found_software.len() == 1) {
+//     None
+//   } else {
+//     found_software.first().cloned()
+//   };
+//
+//   debug!(&server_software);
+//
+//   let split_file_name = file_name.split("-");
+//   let mut mc_ver: Option<McVersion> = None;
+//
+//   for part in split_file_name {
+//     if part.contains("mc") {
+//       let mut part = part.replace("mc", "");
+//       loop {
+//         if part.chars().next().unwrap().is_numeric() {
+//           mc_ver = match Version::parse(&part) {
+//             Ok(v) => Some(McVersion::form_string(v.to_string())?),
+//
+//             Err(_) => None,
+//           };
+//           break;
+//         } else if part.is_empty() {
+//           break;
+//         } else {
+//           part = part.split_at(1).1.to_string();
+//         }
+//       }
+//     }
+//   }
+//
+//   debug!(&mc_ver);
+//   Ok((server_software, mc_ver))
+// }

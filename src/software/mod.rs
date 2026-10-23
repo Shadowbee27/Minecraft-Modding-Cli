@@ -4,11 +4,16 @@ use color_eyre::{
 };
 use date::Date;
 use serde::{Deserialize, Serialize};
-use std::{fmt::Display, path::Path, str::FromStr};
+use std::{
+  fmt::{self, Display},
+  path::Path,
+  str::FromStr,
+};
 use strum::EnumIter;
 
 use crate::{
   config::project_conf::ProjectConfig,
+  debug,
   software::{
     babric::Babric,
     bukkit::Bukkit,
@@ -61,15 +66,14 @@ pub enum ServerSoftware {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SupportedVersion {
-  pub date: Date,
   pub version: String, // semver can't be used thx to minecraft
   pub stable: bool,
 }
 
 impl SupportedVersion {
   pub fn from_string_bool(ver: String, stable: bool) -> Self {
+    debug!(&ver);
     SupportedVersion {
-      date: McVersion::get_date(&ver).unwrap(),
       version: ver,
       stable,
     }
@@ -82,14 +86,12 @@ impl std::fmt::Display for SupportedVersion {
   }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct McVersion(pub String, pub Date);
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct McVersion(pub String);
 
 impl McVersion {
   pub fn form_string(version: String) -> Result<Self> {
-    let date = McVersion::get_date(&version)?;
-
-    Ok(McVersion(version, date))
+    Ok(McVersion(version))
   }
 
   pub fn get_date<T>(mc_version: &T) -> Result<Date>
@@ -101,18 +103,21 @@ impl McVersion {
     let mut date = Date::MIN;
 
     for v in meta.versions {
+      debug!(&v);
       if &v.id == mc_version {
         let date_time = v
           .release_time
           .split_once("T")
           .wrap_err("Failed to parse Date")?
           .0;
+        debug!(&date_time);
         date = Date::from_str(date_time)?;
         break;
       }
     }
 
     if date == Date::MIN {
+      debug!(&date);
       return Err(eyre!("Unknown Minecraft version"));
     }
 
@@ -120,10 +125,16 @@ impl McVersion {
   }
 }
 
-pub trait SeverSoftware {
+pub trait Software {
+  const NAME: &str;
+  fn name(&self) -> &'static str {
+    Self::NAME
+  }
   fn update(&mut self) -> Result<()>;
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()>;
-  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>>;
+  fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>>
+  where
+    Self: Sized;
   fn get_self_versions(&mut self, _mc_version: &McVersion) -> Result<()>
   where
     Self: Sized + Clone,
@@ -150,22 +161,10 @@ impl ServerSoftware {
     }
   }
 
-  pub fn as_str(&self) -> &str {
-    match self {
-      Self::FABRIC(_) => "Fabric",
-      Self::FOLIA(_) => "Folia",
-      Self::FORGE(_) => "Forge",
-      Self::NEOFORGE(_) => "Neoforge",
-      Self::PAPER(_) => "Paper",
-      Self::VANILLA(_) => "Vanilla",
-      Self::BUKKIT(_) => "Bukkit",
-      Self::QUILT(_) => "Quilt",
-      Self::LegacyFabric(_) => "Legacy Fabric",
-      Self::PURPUR(_) => "Purpur",
-      Self::SPIGGOT(_) => "Spiggot",
-      Self::BABRIC(_) => "Babric",
-    }
+  pub fn as_str<T: Software>() -> &'static str {
+    T::NAME
   }
+
   pub fn install(&mut self, project_config: ProjectConfig, server_dir: &Path) -> Result<()> {
     match self {
       Self::FABRIC(f) => f.install(project_config, server_dir),
@@ -250,6 +249,29 @@ impl Display for ServerSoftware {
       Self::PURPUR(_) => write!(f, "Purpur"),
       Self::SPIGGOT(_) => write!(f, "Spiggot"),
       Self::BABRIC(_) => write!(f, "Babric"),
+    }
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct ServerDetails<'a> {
+  pub name: &'a str,
+  pub version: &'a str,
+  pub flavor: &'a str,
+}
+
+impl<'a> fmt::Display for ServerDetails<'a> {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{} - {} - {}", self.flavor, self.name, self.version)
+  }
+}
+
+impl<'a> ServerDetails<'a> {
+  pub fn from_software(info: &'a ProjectConfig) -> Self {
+    Self {
+      name: &info.server_name,
+      version: &info.mc_version.0,
+      flavor: &info.flavor_version,
     }
   }
 }

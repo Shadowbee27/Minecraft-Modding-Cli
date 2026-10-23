@@ -8,10 +8,10 @@ use std::path::Path;
 use std::process::Command;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
-use crate::common::download::download_file;
 use crate::common::maven::get_versions;
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::software::{McVersion, ServerSoftware};
 use crate::tui::dialogs::flavor::select_flavor_version;
@@ -23,7 +23,8 @@ pub struct Forge {
   pub flavor_version: String,
 }
 
-impl SeverSoftware for Forge {
+impl Software for Forge {
+  const NAME: &str = "Forge";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     self.get_self_versions(&pconf.mc_version)?;
 

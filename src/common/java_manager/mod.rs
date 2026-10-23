@@ -100,22 +100,23 @@ impl JavaVersion {
       JavaVersion::JAVA21(_) => "Java 21".to_string(),
     }
   }
-  pub fn is_stable(&self, mc_version: &McVersion) -> bool {
-    if mc_version.1 < Date::from_str("2021-05-12").unwrap() {
+  pub fn is_stable(&self, mc_version: &McVersion) -> Result<bool> {
+    let date = McVersion::get_date(&mc_version.0)?;
+    if date < Date::from_str("2021-05-12").unwrap() {
       // Java 8
-      self.is_java8()
-    } else if mc_version.1 < Date::from_str("2021-09-15").unwrap() {
+      Ok(self.is_java8())
+    } else if date < Date::from_str("2021-09-15").unwrap() {
       // Java 16
-      self.is_java17()
-    } else if mc_version.1 < Date::from_str("2024-04-03").unwrap() {
+      Ok(self.is_java17())
+    } else if date < Date::from_str("2024-04-03").unwrap() {
       // Java 17
-      self.is_java17()
-    } else if mc_version.1 < Date::from_str("2025-12-16").unwrap() {
+      Ok(self.is_java17())
+    } else if date < Date::from_str("2025-12-16").unwrap() {
       // Java 21
-      self.is_java21()
+      Ok(self.is_java21())
     } else {
       // Java 25
-      self.is_java25()
+      Ok(self.is_java25())
     }
   }
 
@@ -209,10 +210,13 @@ mod tests {
 
   #[test]
   fn is_stable() {
-    debug!(JavaVersion::is_stable(
-      &JavaVersion::JAVA25(Java25::default()),
-      &McVersion("26.3".to_string(), Date::today_utc()),
-    ));
+    debug!(
+      JavaVersion::is_stable(
+        &JavaVersion::JAVA25(Java25::default()),
+        &McVersion("26.3".to_string()),
+      )
+      .unwrap()
+    );
   }
 
   // #[test]

@@ -25,6 +25,7 @@ pub const PROJECT_CONFIG_VERSION: Version = Version {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ProjectConfig {
+  pub server_name: String,
   pub config_version: Version,
   pub flavor: ServerSoftware,
   pub flavor_version: String,

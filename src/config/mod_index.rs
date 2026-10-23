@@ -29,10 +29,10 @@ pub struct ModMeta {
   pub deps: Vec<Deps>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ModSource {
-  // CURSEFORGE,
   MODRINTH,
+  // CURSEFORGE,
   #[default]
   UNKNOWN,
 }
@@ -54,10 +54,12 @@ impl ModsIndex {
 
   /// This expects the folder to exist
   pub fn write_conf(&self) -> Result<()> {
-    fs::write(
-      self.path.join(".mcmc-index/mods.json"),
-      serde_json::to_string(self)?,
-    )?;
+    let path = self.path.join(".mcmc-index/");
+    if !exists(&path)? {
+      fs::create_dir_all(&path)?;
+    }
+
+    fs::write(path.join("mods.json"), serde_json::to_string(self)?)?;
     Ok(())
   }
 }

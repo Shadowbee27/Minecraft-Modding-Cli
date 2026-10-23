@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokio::runtime::Runtime;
 
-use super::SeverSoftware;
+use super::Software;
 use super::SupportedVersion;
-use crate::common::download::download_file;
+use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::tui::dialogs::minecraft::mc_version_select;
 
@@ -61,7 +61,8 @@ impl VanillaMetadata {
   }
 }
 
-impl SeverSoftware for Vanilla {
+impl Software for Vanilla {
+  const NAME: &str = "Vanilla";
   fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let metadata = get_vanilla_metadata()?;
     let mut info_url = String::new();

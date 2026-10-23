@@ -1,7 +1,7 @@
 use clap::clap_derive::*;
 use color_eyre::{
   Result,
-  eyre::{Context, eyre},
+  eyre::{Context, ContextCompat, eyre},
 };
 use std::fs::{create_dir_all, exists};
 use std::path::PathBuf;
@@ -68,6 +68,13 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
   }
 
   let project_config = ProjectConfig {
+    server_name: args
+      .dir
+      .iter()
+      .next_back()
+      .wrap_err("Failed to get directory name")?
+      .display()
+      .to_string(),
     config_version: PROJECT_CONFIG_VERSION,
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
