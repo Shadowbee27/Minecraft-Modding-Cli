@@ -2,7 +2,7 @@ use color_eyre::eyre::eyre;
 use color_eyre::{Result, eyre::OptionExt};
 use colorful::{Color, Colorful};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::Software;
@@ -18,7 +18,7 @@ pub struct Spiggot {}
 
 impl Software for Spiggot {
   const NAME: &str = "Spiggot";
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     let path = format!(
       "{}/buildtools.jar",
       pdir
@@ -34,9 +34,7 @@ impl Software for Spiggot {
         "-jar",
         path.as_str(),
         "--o",
-        pdir
-          .to_str()
-          .ok_or_eyre("Failed to convert path to string")?,
+        &pdir.display().to_string(),
         "--rev",
         pconf.mc_version.0.as_str(),
       ])
@@ -51,6 +49,9 @@ impl Software for Spiggot {
       println!("{}", eoo.color(Color::Red).bold());
       return Err(eyre!("Failed to run Buildtools, {}", result.status));
     }
+
+    pconf.jar_file = PathBuf::from(pdir).join(format!("spigot-{}.jar", pconf.mc_version.0));
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     println!("{}", eoo.color(Color::Green).bold());
     Ok(())

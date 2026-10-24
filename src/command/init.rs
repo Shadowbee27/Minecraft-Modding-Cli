@@ -11,12 +11,15 @@ use walkdir::WalkDir;
 use crate::{
   config::{
     mod_index::ModsIndex,
-    project_conf::{LaunchArgs, PROJECT_CONFIG_VERSION, ProjectConfig},
+    project_conf::{PROJECT_CONFIG_VERSION, ProjectConfig},
   },
   debug,
   mod_source::index::index_mods,
   software::{McVersion, ServerSoftware},
-  tui::dialogs::{minecraft::mc_version_select, software::server_software_selector},
+  tui::{
+    dialogs::{minecraft::mc_version_select, software::server_software_selector},
+    modals::run::Ram,
+  },
 };
 
 #[derive(Parser, Debug, Clone)]
@@ -95,8 +98,8 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
     flavor: serversoftware.clone(),
     flavor_version: String::new(),
     mc_version: mc_version.clone(),
-    jar_file: jar_file.clone(),
-    launch_args: LaunchArgs::default(),
+    jar_file: PathBuf::from(jar_file.clone()),
+    ram: Ram::default(),
     java_install: None,
   };
   fs::create_dir_all(dir.join(".mcmc/"))?;

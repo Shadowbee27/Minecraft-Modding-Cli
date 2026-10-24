@@ -4,7 +4,7 @@ use colorful::{Color, Colorful};
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use tokio::runtime::Runtime;
 
@@ -32,21 +32,23 @@ impl Software for NeoForge {
       "{}/net/neoforged/neoforge/{}/neoforge-{}-installer.jar",
       NEOFORGE_URL, self.flavor_version, self.flavor_version
     );
-    pconf.jar_file = format!(
+    pconf.jar_file = PathBuf::from(format!(
       "{}/neoforge-{}-installer.jar",
-      pdir
-        .to_str()
-        .ok_or_eyre("Failed to convert path to string")?,
+      pdir.display(),
       self.flavor_version
-    );
+    ));
 
-    Runtime::new()?.block_on(download_file(&Client::new(), url.as_str(), &pconf.jar_file))?;
+    Runtime::new()?.block_on(download_file(
+      &Client::new(),
+      url.as_str(),
+      &pconf.jar_file.display().to_string(),
+    ))?;
 
     // java -jar test_server/neoforge-26.2-65.1.3-installer.jar --installServer test_server
     let cmd = Command::new("java")
       .args([
         "-jar",
-        &pconf.jar_file,
+        &pconf.jar_file.display().to_string(),
         "--installServer",
         pdir
           .to_str()

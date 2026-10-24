@@ -12,6 +12,7 @@ use std::{
 use crate::{
   common::java_manager::JavaVersion,
   software::{McVersion, ServerSoftware},
+  tui::modals::run::Ram,
 };
 
 pub const PROJECT_CONFIG_PATH: &str = ".mcmc/config.toml";
@@ -30,31 +31,18 @@ pub struct ProjectConfig {
   pub flavor: ServerSoftware,
   pub flavor_version: String,
   pub mc_version: McVersion,
-  pub jar_file: String,
-  pub launch_args: LaunchArgs,
+  pub jar_file: PathBuf,
+  pub ram: Ram,
   pub java_install: Option<JavaVersion>,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct LaunchArgs {
-  max_mem: u128,
-  min_mem: u128,
-  user: Vec<String>,
-}
-
-impl Default for LaunchArgs {
-  fn default() -> Self {
-    LaunchArgs {
-      max_mem: 2048,
-      min_mem: 1024,
-      user: Vec::new(),
-    }
-  }
 }
 
 impl ProjectConfig {
   pub fn save(&self, project_dir: &Option<PathBuf>) -> Result<()> {
     let serialized = toml::to_string(&self)?;
+    if !self.jar_file.is_empty() {
+      dbg!(&self.jar_file);
+      self.jar_file.canonicalize().unwrap();
+    }
 
     let conf_path = if let Some(prefix) = project_dir {
       prefix.join(PROJECT_CONFIG_PATH)

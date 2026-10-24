@@ -1,4 +1,4 @@
-use std::{any::Any, fmt, str::FromStr};
+use std::{any::Any, fmt, path::PathBuf, str::FromStr};
 
 use color_eyre::{
   Result,
@@ -193,9 +193,14 @@ impl JavaVersion {
       JavaVersion::JAVA25(java) => Box::new(java),
     }
   }
+
+  pub fn get_path(self) -> PathBuf {
+    self.to_java().get_path()
+  }
 }
 
 pub trait Java: Any {
+  fn get_path(&self) -> PathBuf;
   fn install(self) -> Result<()>;
   fn as_any(&self) -> &dyn Any;
 }

@@ -4,6 +4,7 @@ use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::{collections::HashMap, fmt, path::Path, process::exit};
 use tokio::runtime::Runtime;
 
@@ -33,22 +34,20 @@ impl Software for Folia {
     self.get_self_versions(&pconf.mc_version)?;
     let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
     let file_path = format!(
-      "folia-server-mc{}-build{}.jar",
-      pconf.mc_version.0, self.flavor_version
+      "{}/folia-server-mc{}-build{}.jar",
+      pdir.display(),
+      pconf.mc_version.0,
+      self.flavor_version
     );
 
     let client = AClient::new();
     let rt = Runtime::new().unwrap();
 
-    let download_result = rt.block_on(download_file(
-      &client,
-      &download_url,
-      &format!("{}/{}", pdir.display(), file_path),
-    ));
+    let download_result = rt.block_on(download_file(&client, &download_url, &file_path));
 
     pconf.flavor = super::ServerSoftware::FOLIA(self.clone());
     pconf.flavor_version = self.flavor_version.to_string();
-    pconf.jar_file = file_path;
+    pconf.jar_file = PathBuf::from(file_path);
 
     pconf.save(&Some(pdir.to_path_buf()))?;
 

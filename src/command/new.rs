@@ -3,7 +3,7 @@ use color_eyre::{
   Result,
   eyre::{Context, ContextCompat, eyre},
 };
-use std::fs::{create_dir_all, exists};
+use std::fs::{self, create_dir_all};
 use std::path::PathBuf;
 
 use crate::tui::dialogs::minecraft::mc_version_select;
@@ -12,7 +12,7 @@ use crate::{
   common::get_current_full_dir,
   config::project_conf::{PROJECT_CONFIG_VERSION, ProjectConfig},
 };
-use crate::{config::project_conf::LaunchArgs, software::ServerSoftware};
+use crate::{software::ServerSoftware, tui::modals::run::Ram};
 
 #[derive(Parser, Debug, Clone)]
 #[command(version, about)]
@@ -29,7 +29,7 @@ struct ServerDir<'a> {
 
 pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
   args.dir = get_current_full_dir()?.join(args.dir); // use full instedt of relitiv path
-  if exists(&args.dir)? {
+  if fs::read_dir(&args.dir)?.next().is_some() {
     return Err(eyre!("Directory is not empty, please use init"));
   }
 
@@ -79,13 +79,13 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
     flavor: server_software.clone(),
     flavor_version: server_software.clone().get_flavor_version(),
     mc_version: minecraft_version?.clone(),
-    jar_file: String::new(),
-    launch_args: LaunchArgs::default(),
+    jar_file: PathBuf::new(),
+    ram: Ram::default(),
     java_install: None,
   };
 
   project_config
-    .save(&Some(args.dir.clone()))
+    .save(&Some(args.dir.clone().canonicalize().unwrap()))
     .wrap_err("Error while saving project-config file")?;
 
   server_software.install(project_config, &args.dir)?;

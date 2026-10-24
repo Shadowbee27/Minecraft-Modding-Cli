@@ -6,6 +6,7 @@ use reqwest::blocking::Client as BClient;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::exit;
 use tokio::runtime::Runtime;
 
@@ -82,20 +83,18 @@ impl Software for Fabric {
     );
 
     let file_path = format!(
-      "fabric-server-mc{}-fabric{}.jar",
-      pconf.mc_version.0, self.flavor_version
+      "{}/fabric-server-mc{}-fabric{}.jar",
+      pdir.display(),
+      pconf.mc_version.0,
+      self.flavor_version
     );
 
     let rt = Runtime::new().unwrap();
 
-    let result = rt.block_on(download_file(
-      &client,
-      &download_url,
-      &format!("{}/{}", pdir.display(), file_path),
-    ));
+    let result = rt.block_on(download_file(&client, &download_url, &file_path));
 
     pconf.flavor = super::ServerSoftware::FABRIC(self.clone());
-    pconf.jar_file = file_path;
+    pconf.jar_file = PathBuf::from(file_path);
 
     pconf.save(&Some(pdir.to_path_buf()))?;
 

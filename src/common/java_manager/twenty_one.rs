@@ -16,6 +16,10 @@ impl Java for Java21 {
     unimplemented!()
   }
 
+  fn get_path(&self) -> PathBuf {
+    self.path.clone()
+  }
+
   fn as_any(&self) -> &dyn std::any::Any {
     self
   }

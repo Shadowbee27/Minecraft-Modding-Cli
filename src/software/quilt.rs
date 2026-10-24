@@ -95,13 +95,7 @@ impl Software for Quilt {
         "server",
         pconf.mc_version.0.as_str(),
         "--download-server",
-        format!(
-          "--install-dir={}",
-          pdir
-            .to_str()
-            .ok_or_eyre("Failed to convert project dir to string")?
-        )
-        .as_str(),
+        format!("--install-dir={}", pdir.display()).as_str(),
       ])
       .spawn()?;
 

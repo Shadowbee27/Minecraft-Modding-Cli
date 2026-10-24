@@ -12,7 +12,8 @@ use std::{
 use strum::EnumIter;
 
 use crate::{
-  config::project_conf::ProjectConfig,
+  common::java_manager::JavaVersion,
+  config::{global_conf::Config, project_conf::ProjectConfig},
   debug,
   software::{
     babric::Babric,
@@ -90,6 +91,27 @@ impl std::fmt::Display for SupportedVersion {
 pub struct McVersion(pub String);
 
 impl McVersion {
+  pub fn get_default_java(mc_version: &McVersion) -> Result<JavaVersion> {
+    let config = Config::load()?;
+    let date = McVersion::get_date(&mc_version.0)?;
+    if date < Date::from_str("2021-05-12").unwrap() {
+      // Java 8
+      Ok(JavaVersion::JAVA8(config.java_settings.default_8))
+    } else if date < Date::from_str("2021-09-15").unwrap() {
+      // Java 16
+      Ok(JavaVersion::JAVA17(config.java_settings.default_17))
+    } else if date < Date::from_str("2024-04-03").unwrap() {
+      // Java 17
+      Ok(JavaVersion::JAVA17(config.java_settings.default_17))
+    } else if date < Date::from_str("2025-12-16").unwrap() {
+      // Java 21
+      Ok(JavaVersion::JAVA21(config.java_settings.default_21))
+    } else {
+      // Java 25
+      Ok(JavaVersion::JAVA25(config.java_settings.default_25))
+    }
+  }
+
   pub fn form_string(version: String) -> Result<Self> {
     Ok(McVersion(version))
   }
@@ -262,7 +284,11 @@ pub struct ServerDetails<'a> {
 
 impl<'a> fmt::Display for ServerDetails<'a> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{} - {} - {}", self.flavor, self.name, self.version)
+    write!(
+      f,
+      " Fabric: {} - {} - Minecraf: {} ",
+      self.flavor, self.name, self.version
+    )
   }
 }
 

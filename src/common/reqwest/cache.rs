@@ -10,7 +10,7 @@ fn cache_key(url: impl AsRef<[u8]>) -> String {
   hex::encode(Sha1::digest(url))
 }
 
-pub fn get_with_cache<'a, T: IntoUrl + AsRef<[u8]> + Clone, Value: Clone + DeserializeOwned>(
+pub fn get_with_cache<T: IntoUrl + AsRef<[u8]> + Clone, Value: Clone + DeserializeOwned>(
   client: &Client,
   cache: &mut Cache<Value>,
   url: T,

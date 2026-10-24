@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tokio::runtime::Runtime;
 
 use super::{Software, SupportedVersion};
@@ -65,22 +65,20 @@ impl Software for Purpur {
     );
 
     let file_path = format!(
-      "purpur-server-mc{}-{}.jar",
-      pconf.mc_version.0, self.flavor_version
+      "{}/purpur-server-mc{}-{}.jar",
+      pdir.display(),
+      pconf.mc_version.0,
+      self.flavor_version
     );
 
     let client = AClient::new();
     let rt = Runtime::new().unwrap();
 
-    let download_result = rt.block_on(download_file(
-      &client,
-      &download_url,
-      &format!("{}/{}", pdir.display(), file_path),
-    ));
+    let download_result = rt.block_on(download_file(&client, &download_url, &file_path));
 
     pconf.flavor = super::ServerSoftware::PURPUR(self.clone());
     pconf.flavor_version = self.flavor_version.clone();
-    pconf.jar_file = file_path;
+    pconf.jar_file = PathBuf::from(file_path);
 
     pconf.save(&Some(pdir.to_path_buf()))?;
 

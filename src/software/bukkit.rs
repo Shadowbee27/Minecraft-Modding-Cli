@@ -2,7 +2,7 @@ use color_eyre::eyre::eyre;
 use color_eyre::{Result, eyre::OptionExt};
 use colorful::{Color, Colorful};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::Software;
@@ -17,7 +17,7 @@ pub struct Bukkit {}
 
 impl Software for Bukkit {
   const NAME: &str = "Bukkit";
-  fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()> {
+  fn install(&mut self, mut pconf: ProjectConfig, pdir: &Path) -> Result<()> {
     debug!(pdir);
     let path = format!(
       "{}/buildtools.jar",
@@ -53,6 +53,9 @@ impl Software for Bukkit {
       println!("{}", eoo.color(Color::Red).bold());
       return Err(eyre!("Failed to run Buildtools, {}", result.status));
     }
+
+    pconf.jar_file = PathBuf::from(pdir).join(format!("craftbukzkit-{}.jar", pconf.mc_version.0));
+    pconf.save(&Some(pdir.to_path_buf()))?;
 
     println!("{}", eoo.color(Color::Green).bold());
     Ok(())

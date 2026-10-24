@@ -4,7 +4,7 @@ use colorful::{Color, Colorful};
 use rayon::prelude::*;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use tokio::runtime::Runtime;
 
@@ -35,21 +35,23 @@ impl Software for Forge {
       "https://maven.minecraftforge.net/net/minecraftforge/forge/{}/forge-{}-installer.jar",
       self.flavor_version, self.flavor_version
     );
-    pconf.jar_file = format!(
+    pconf.jar_file = PathBuf::from(format!(
       "{}/forge-{}-installer.jar",
-      pdir
-        .to_str()
-        .ok_or_eyre("Failed to convert path to string")?,
+      pdir.display(),
       self.flavor_version
-    );
+    ));
 
-    Runtime::new()?.block_on(download_file(&Client::new(), url.as_str(), &pconf.jar_file))?;
+    Runtime::new()?.block_on(download_file(
+      &Client::new(),
+      url.as_str(),
+      &pconf.jar_file.display().to_string(),
+    ))?;
 
     // java -jar test_server/forge-26.2-65.1.3-installer.jar --installServer test_server
     let cmd = Command::new("java")
       .args([
         "-jar",
-        &pconf.jar_file,
+        &pconf.jar_file.display().to_string(),
         "--installServer",
         pdir
           .to_str()

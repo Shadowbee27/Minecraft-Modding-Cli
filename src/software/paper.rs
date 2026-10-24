@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 use std::path::Path;
+use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 use super::Software;
@@ -36,22 +37,20 @@ impl Software for Paper {
     let download_url = get_build_url(self.flavor_version, &pconf.mc_version.0)?;
 
     let file_path = format!(
-      "paper-server-mc{}-build{}.jar",
-      pconf.mc_version.0, self.flavor_version
+      "{}/paper-server-mc{}-build{}.jar",
+      pdir.display(),
+      pconf.mc_version.0,
+      self.flavor_version
     );
 
     let client = AClient::new();
     let rt = Runtime::new().unwrap();
 
-    let download_result = rt.block_on(download_file(
-      &client,
-      &download_url,
-      &format!("{}/{}", pdir.display(), file_path),
-    ));
+    let download_result = rt.block_on(download_file(&client, &download_url, &file_path));
 
     pconf.flavor = super::ServerSoftware::PAPER(self.clone());
     pconf.flavor_version = self.flavor_version.to_string();
-    pconf.jar_file = file_path;
+    pconf.jar_file = PathBuf::from(file_path);
 
     pconf.save(&Some(pdir.to_path_buf()))?;
 

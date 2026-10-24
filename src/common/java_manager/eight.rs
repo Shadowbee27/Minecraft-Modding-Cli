@@ -16,6 +16,10 @@ impl Java for Java8 {
     unimplemented!()
   }
 
+  fn get_path(&self) -> PathBuf {
+    self.path.clone()
+  }
+
   fn as_any(&self) -> &dyn std::any::Any {
     self
   }

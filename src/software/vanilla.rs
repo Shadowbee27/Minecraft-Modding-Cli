@@ -3,6 +3,7 @@ use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 use super::Software;
@@ -78,19 +79,19 @@ impl Software for Vanilla {
     let client = AClient::new();
     let download_url = info.downloads.server.url;
 
-    let file_path = format!("vanilla-server-mc{}.jar", pconf.mc_version.0);
+    let file_path = format!(
+      "{}/vanilla-server-mc{}.jar",
+      pdir.display(),
+      pconf.mc_version.0
+    );
 
     let rt = Runtime::new().unwrap();
 
-    let result = rt.block_on(download_file(
-      &client,
-      &download_url,
-      &format!("{}/{}", pdir.display(), file_path),
-    ));
+    let result = rt.block_on(download_file(&client, &download_url, &file_path));
 
     self.flavor_version = pconf.mc_version.0.clone();
     pconf.flavor = super::ServerSoftware::VANILLA(self.clone());
-    pconf.jar_file = file_path;
+    pconf.jar_file = PathBuf::from(file_path);
     pconf.flavor_version = self.flavor_version.clone();
 
     pconf.save(&Some(pdir.to_path_buf()))?;
