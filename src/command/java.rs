@@ -58,7 +58,7 @@ pub fn java_manager_set(args: JavaManagerSetArgs) -> Result<()> {
     &pconf.mc_version,
   )?);
 
-  pconf.save(&None)?;
+  pconf.save(&args.path)?;
   Ok(())
 }
 

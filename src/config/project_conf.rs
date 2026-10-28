@@ -11,6 +11,7 @@ use std::{
 
 use crate::{
   common::java_manager::JavaVersion,
+  debug,
   software::{McVersion, ServerSoftware},
   tui::modals::run::Ram,
 };
@@ -40,7 +41,6 @@ impl ProjectConfig {
   pub fn save(&self, project_dir: &Option<PathBuf>) -> Result<()> {
     let serialized = toml::to_string(&self)?;
     if !self.jar_file.is_empty() {
-      dbg!(&self.jar_file);
       self.jar_file.canonicalize().unwrap();
     }
 
@@ -49,6 +49,8 @@ impl ProjectConfig {
     } else {
       PathBuf::from(PROJECT_CONFIG_PATH)
     };
+
+    debug!(&conf_path);
 
     fs::write(conf_path, serialized)?;
     Ok(())
