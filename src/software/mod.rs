@@ -276,13 +276,13 @@ impl Display for ServerSoftware {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct ServerDetails<'a> {
-  pub name: &'a str,
-  pub version: &'a str,
-  pub flavor: &'a str,
+pub struct ServerDetails {
+  pub name: Box<str>,
+  pub version: Box<str>,
+  pub flavor: Box<str>,
 }
 
-impl<'a> fmt::Display for ServerDetails<'a> {
+impl fmt::Display for ServerDetails {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(
       f,
@@ -292,12 +292,12 @@ impl<'a> fmt::Display for ServerDetails<'a> {
   }
 }
 
-impl<'a> ServerDetails<'a> {
-  pub fn from_software(info: &'a ProjectConfig) -> Self {
+impl ServerDetails {
+  pub fn from_software(info: ProjectConfig) -> Self {
     Self {
-      name: &info.server_name,
-      version: &info.mc_version.0,
-      flavor: &info.flavor_version,
+      name: info.server_name.into_boxed_str(),
+      version: info.mc_version.0.into_boxed_str(),
+      flavor: info.flavor_version.into_boxed_str(),
     }
   }
 }

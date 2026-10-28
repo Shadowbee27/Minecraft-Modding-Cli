@@ -32,6 +32,6 @@ pub fn run_server(args: RunArgs) -> Result<()> {
       ram: project_config.ram,
       path: run_dir,
     },
-    ServerDetails::from_software(&project_config),
+    ServerDetails::from_software(project_config),
   )
 }

@@ -50,6 +50,7 @@ macro_rules! debug {
 
 fn main() -> Result<()> {
   color_eyre::install()?;
+  better_panic::install();
 
   // // a builder for `FmtSubscriber`.
   // let subscriber = FmtSubscriber::builder()

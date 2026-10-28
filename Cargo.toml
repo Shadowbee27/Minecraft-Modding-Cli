@@ -36,6 +36,7 @@ date-rs = "1.6.2"
 dirs = "7.0.0"
 crossterm = "0.29.0"
 clap_complete = "4.6.11"
+better-panic = "0.3.0"
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.100.0"
