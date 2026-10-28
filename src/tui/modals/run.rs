@@ -198,7 +198,7 @@ impl RunApp {
       if self.exit {
         if let Some(stdin) = self.server_stdin.as_mut() {
           let _ = writeln!(stdin, "stop");
-          let _ = stdin.flush()?;
+          let _ = stdin.flush();
         } else if let Some(child) = self.server.as_mut() {
           child.kill()?;
         }
