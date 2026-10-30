@@ -47,8 +47,8 @@ pub mod vanilla;
 
 // Unlikely to be supported: Sponge, Java agent, liteloader, RisugamisModLoader, Nil loader, Ornithe, Rift
 // Todo:
-// install done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge, bukkit, spiggot, Babric
-// update done:
+// install done:
+// update done: fabric, folia, paper, purpur, Legacy Fabric, vanilla, quilt, forge, neoforge, bukkit, spiggot, Babric
 #[derive(Debug, Clone, Deserialize, Serialize, EnumIter)]
 pub enum ServerSoftware {
   BUKKIT(Bukkit),

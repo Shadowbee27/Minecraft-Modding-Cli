@@ -74,15 +74,14 @@ impl Software for Bukkit {
           && !yes_no_prompt(
             "You are downgrading, this may corrupt your world are you sure?",
             None,
-          ) {
-            return Ok(());
-          }
+          )
+        {
+          return Ok(());
+        }
         pconf.mc_version = mc_ver;
       }
       WhatToUpdate::FLAVOR(_) => {}
     };
-
-    pconf.save(&pdir)?;
 
     let pdir = if let Some(dir) = pdir {
       dir

@@ -122,8 +122,6 @@ impl Software for Vanilla {
       WhatToUpdate::FLAVOR(_) => unreachable!(),
     };
 
-    pconf.save(&pdir)?;
-
     let pdir = if let Some(dir) = pdir {
       dir
     } else {

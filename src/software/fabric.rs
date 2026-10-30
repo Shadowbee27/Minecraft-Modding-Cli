@@ -116,9 +116,10 @@ impl Software for Fabric {
           && !yes_no_prompt(
             "You are downgrading, this may corrupt your world are you sure?",
             None,
-          ) {
-            return Ok(());
-          }
+          )
+        {
+          return Ok(());
+        }
 
         debug!(&mc_ver);
         pconf.mc_version = mc_ver;
@@ -127,7 +128,6 @@ impl Software for Fabric {
       WhatToUpdate::FLAVOR(_) => {}
     };
 
-    pconf.save(&pdir)?;
     let pdir = if let Some(dir) = pdir {
       dir
     } else {
