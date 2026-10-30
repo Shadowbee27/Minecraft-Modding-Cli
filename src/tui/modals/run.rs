@@ -10,7 +10,7 @@ use ratatui::{
   style::Stylize,
   symbols::border,
   text::{Line, Text},
-  widgets::{Block, Paragraph, Widget, Wrap},
+  widgets::{Block, Paragraph, Widget},
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -138,12 +138,13 @@ pub struct ConsoleInput {
 
 #[derive(Debug)]
 pub struct RunApp {
+  rows: Vec<String>,
+  rows_done: usize,
+  rows_width: usize,
   input: ConsoleInput,
   auto_scroll: bool,
   scroll: u16,
-  logs: Arc<RwLock<Vec<String>>>, // Shared between logs pull &main thread
-  // log_rx: Receiver<String>,
-  // log_tx: Sender<String>,
+  logs: Arc<RwLock<Vec<String>>>,
   exe_args: ExeArgs,
   server: Option<Child>,
   server_stdin: Option<ChildStdin>,
@@ -157,6 +158,7 @@ pub enum RunState {
   Exiting,  // Popup asking the user if the server should be stopped
   Console,  // the user is able to input commands into to the server console
   Overview, // Just showing the logs with the option to exit or enter console mode
+  Crashed,  // The server stopped unexpectedly
 }
 
 impl RunApp {
@@ -176,9 +178,12 @@ impl RunApp {
           if !cmd.starts_with("/") {
             cmd = format!("/say {}", cmd);
           }
-          if let Some(stdin) = self.server_stdin.as_mut() {
-            writeln!(stdin, "{}", cmd)?;
-            stdin.flush()?;
+          if let Some(stdin) = self.server_stdin.as_mut()
+            && writeln!(stdin, "{}", cmd)
+              .and_then(|_| stdin.flush())
+              .is_err()
+          {
+            self.state = RunState::Crashed;
           }
         }
       }
@@ -189,10 +194,13 @@ impl RunApp {
         self.handle_events()?;
       }
 
-      if let Some(server) = &mut self.server
+      if self.state != RunState::Crashed
+        && !self.exit
+        && let Some(server) = &mut self.server
         && let Ok(Some(_status)) = server.try_wait()
       {
-        self.exit = true;
+        self.state = RunState::Crashed;
+        self.server_stdin = None;
       }
 
       if self.exit {
@@ -219,6 +227,18 @@ impl RunApp {
       .direction(Direction::Vertical)
       .constraints([Constraint::Min(5), Constraint::Length(3)])
       .split(frame.area());
+
+    self.sync_rows(chunks[0].width.saturating_sub(2) as usize);
+    let max = self.max_scroll(chunks[0]);
+
+    if self.auto_scroll {
+      self.scroll = max;
+    } else {
+      self.scroll = self.scroll.min(max);
+      if self.scroll == max {
+        self.auto_scroll = true;
+      }
+    }
 
     self.input.state = self.state;
     frame.render_widget(&*self, chunks[0]);
@@ -274,6 +294,20 @@ impl RunApp {
         _ => {}
       },
       RunState::Console => {}
+      RunState::Crashed => match key_event.code {
+        KeyCode::Char('q') => self.exit = true,
+        KeyCode::Up => {
+          self.auto_scroll = false;
+          self.scroll = self.scroll.saturating_sub(1);
+        }
+        KeyCode::Down => {
+          self.scroll = self.scroll.saturating_add(1);
+        }
+        KeyCode::End => {
+          self.auto_scroll = true;
+        }
+        _ => {}
+      },
     }
 
     Ok(())
@@ -355,10 +389,6 @@ impl RunApp {
   fn delete_char(&mut self) {
     let is_not_cursor_leftmost = self.input.character_index != 0;
     if is_not_cursor_leftmost {
-      // Method "remove" is not used on the saved text for deleting the selected char.
-      // Reason: Using remove on String works on bytes instead of the chars.
-      // Using remove would require special care because of char boundaries.
-
       let current_index = self.input.character_index;
       let from_left_to_current_index = current_index - 1;
 
@@ -388,8 +418,49 @@ impl RunApp {
     self.reset_cursor();
   }
 
+  fn sync_rows(&mut self, width: usize) {
+    let logs = self.logs.read().unwrap();
+    if width != self.rows_width {
+      self.rows.clear();
+      self.rows_done = 0;
+      self.rows_width = width;
+    }
+    self
+      .rows
+      .extend(Self::wrap_rows(&logs[self.rows_done..], width));
+    self.rows_done = logs.len();
+  }
+
+  fn max_scroll(&self, area: Rect) -> u16 {
+    let visible = area.height.saturating_sub(2) as usize;
+    self
+      .rows
+      .len()
+      .saturating_sub(visible)
+      .min(u16::MAX as usize) as u16
+  }
+
+  fn wrap_rows(logs: &[String], width: usize) -> Vec<String> {
+    let width = width.max(1);
+    let mut rows = Vec::new();
+    for line in logs {
+      let clean: Vec<char> = line
+        .chars()
+        .map(|c| if c == '\t' { ' ' } else { c })
+        .filter(|c| !c.is_control())
+        .collect();
+      if clean.is_empty() {
+        rows.push(String::new());
+      } else {
+        for chunk in clean.chunks(width) {
+          rows.push(chunk.iter().collect());
+        }
+      }
+    }
+    rows
+  }
+
   fn new(exe_args: ExeArgs, server_info: ServerDetails) -> Self {
-    // let (log_tx, log_rx) = mpsc::channel();
     RunApp {
       input: ConsoleInput {
         state: RunState::Overview,
@@ -403,11 +474,12 @@ impl RunApp {
       server_stdin: None,
       exe_args,
       logs: Arc::new(RwLock::new(vec![])),
-      // log_rx,
-      // log_tx,
       server_info: server_info.clone(),
       exit: false,
       state: RunState::Overview,
+      rows: Vec::new(),
+      rows_done: 0,
+      rows_width: 0,
     }
   }
 }
@@ -421,32 +493,24 @@ impl Widget for &RunApp {
       .border_set(border::THICK);
 
     match self.state {
-      RunState::Exiting => block = block.red(),
+      RunState::Exiting | RunState::Crashed => block = block.red(),
       _ => block = block.green(),
     };
 
-    let raw_logs = self.logs.read().unwrap();
+    let visible = area.height.saturating_sub(2) as usize;
+    let start = (self.scroll as usize).min(self.rows.len());
+    let end = (start + visible).min(self.rows.len());
 
     let logs = Text::from(
-      raw_logs
+      self.rows[start..end]
         .iter()
-        .map(|l| Line::from(l.clone()))
+        .map(|r| Line::from(r.as_str()))
         .collect::<Vec<Line>>(),
     );
-
-    let visible_height = area.height.saturating_sub(2) as usize;
-
-    let scroll = if self.auto_scroll {
-      raw_logs.len().saturating_sub(visible_height) as u16
-    } else {
-      self.scroll
-    };
 
     Paragraph::new(logs)
       .left_aligned()
       .block(block)
-      .scroll((scroll, 0))
-      .wrap(Wrap { trim: false })
       .render(area, buf);
   }
 }
@@ -471,6 +535,7 @@ impl Widget for ConsoleInput {
         " Stop & Quit ".into(),
         "<Q> ".blue().bold(),
       ]),
+      RunState::Crashed => Line::from(vec![" Stop & Quit ".into(), "<Q> ".blue().bold()]),
     };
     block = block.title_bottom(instructions.centered());
 
@@ -478,6 +543,7 @@ impl Widget for ConsoleInput {
       RunState::Exiting => block = block.red(),
       RunState::Overview => block = block.green(),
       RunState::Console => block = block.yellow(),
+      RunState::Crashed => block = block.red(),
     };
 
     Paragraph::new(self.input).block(block).render(area, buf);
