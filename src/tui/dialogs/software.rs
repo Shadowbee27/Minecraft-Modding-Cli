@@ -6,12 +6,13 @@ use strum::IntoEnumIterator;
 
 use crate::software::ServerSoftware;
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
+use crate::tui::dialogs::{EMPTY_TO_CANCEL, ESC_TO_CANCEL};
 
 pub fn server_software_selector() -> Result<ServerSoftware> {
   match single_choice(
     ServerSoftware::iter().collect(),
     "Which Server software do you want to use?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => {
       return Ok(ans);
@@ -45,6 +46,6 @@ pub fn server_software_selector() -> Result<ServerSoftware> {
   single_choice_fallback(
     ServerSoftware::iter().collect(),
     "Which Server software do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }

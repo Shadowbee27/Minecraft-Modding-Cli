@@ -13,7 +13,10 @@ use crate::common::maven::get_versions as get_maven_versions;
 use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
 use crate::software::McVersion;
+use crate::tui::common::simple_prompt::yes_no_prompt;
 use crate::tui::dialogs::flavor::select_flavor_version;
+use crate::tui::dialogs::minecraft::mc_version_select;
+use crate::tui::dialogs::update::{WhatToUpdate, what_to_update};
 
 const NEOFORGE_URL: &str = "https://maven.neoforged.net/releases";
 
@@ -74,8 +77,32 @@ impl Software for NeoForge {
     Ok(())
   }
 
-  fn update(&mut self) -> Result<()> {
-    unimplemented!()
+  fn update(&mut self, mut pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    let neoforge = ServerSoftware::NEOFORGE(NeoForge::default());
+    match what_to_update(&neoforge)? {
+      WhatToUpdate::MINECRAFT => {
+        let mc_ver = mc_version_select(&neoforge)?;
+        if mc_ver < pconf.mc_version
+          && !yes_no_prompt(
+            "You are downgrading, this may corrupt your world are you sure?",
+            None,
+          ) {
+            return Ok(());
+          }
+        pconf.mc_version = mc_ver;
+      }
+      WhatToUpdate::FLAVOR(_) => {}
+    };
+
+    pconf.save(&pdir)?;
+
+    let pdir = if let Some(dir) = pdir {
+      dir
+    } else {
+      PathBuf::from(".")
+    };
+    self.install(pconf, <&Path>::from(&pdir))?;
+    Ok(())
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {

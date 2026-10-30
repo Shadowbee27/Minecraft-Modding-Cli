@@ -13,7 +13,7 @@ const DOWNLOAD_URL: &str =
 
 pub fn download_build_tools_jar(path: &str) -> Result<()> {
   Runtime::new()?.block_on(download_file(
-    &Client::builder().user_agent("curl/7.54.1").build()?,
+    &Client::builder().user_agent("curl/8.23.0").build()?,
     DOWNLOAD_URL,
     path,
   ))

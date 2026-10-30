@@ -5,14 +5,17 @@ use strum::IntoEnumIterator;
 
 use crate::{
   mod_source::ModSource,
-  tui::common::simple_prompt::{single_choice, single_choice_fallback},
+  tui::{
+    common::simple_prompt::{single_choice, single_choice_fallback},
+    dialogs::{EMPTY_TO_CANCEL, ESC_TO_CANCEL},
+  },
 };
 
 pub fn preferred_mod_source() -> Result<ModSource> {
   match single_choice(
     ModSource::iter().collect(),
     "Which Mod-Source should be prioritized?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => {
       return Ok(ans);
@@ -46,6 +49,6 @@ pub fn preferred_mod_source() -> Result<ModSource> {
   single_choice_fallback(
     ModSource::iter().collect(),
     "Which Mod-Source should be prioritized?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }

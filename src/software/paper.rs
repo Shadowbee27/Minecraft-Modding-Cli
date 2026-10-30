@@ -1,4 +1,9 @@
+use crate::software::ServerSoftware;
+use crate::tui::common::simple_prompt::yes_no_prompt;
 use crate::tui::dialogs::flavor::select_flavor_version;
+use crate::tui::dialogs::minecraft::mc_version_select;
+use crate::tui::dialogs::update::WhatToUpdate;
+use crate::tui::dialogs::update::what_to_update;
 use color_eyre::Result;
 use rayon::prelude::*;
 use reqwest::Client as AClient;
@@ -57,8 +62,32 @@ impl Software for Paper {
     download_result
   }
 
-  fn update(&mut self) -> Result<()> {
-    unimplemented!()
+  fn update(&mut self, mut pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    let paper = ServerSoftware::PAPER(Paper::default());
+    match what_to_update(&paper)? {
+      WhatToUpdate::MINECRAFT => {
+        let mc_ver = mc_version_select(&paper)?;
+        if mc_ver < pconf.mc_version
+          && !yes_no_prompt(
+            "You are downgrading, this may corrupt your world are you sure?",
+            None,
+          ) {
+            return Ok(());
+          }
+        pconf.mc_version = mc_ver;
+      }
+      WhatToUpdate::FLAVOR(_) => {}
+    };
+
+    pconf.save(&pdir)?;
+
+    let pdir = if let Some(dir) = pdir {
+      dir
+    } else {
+      PathBuf::from(".")
+    };
+    self.install(pconf, <&Path>::from(&pdir))?;
+    Ok(())
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {

@@ -12,8 +12,14 @@ use tokio::runtime::Runtime;
 
 use super::Software;
 use super::SupportedVersion;
+use crate::debug;
 use crate::software::McVersion;
+use crate::software::ServerSoftware;
+use crate::tui::common::simple_prompt::yes_no_prompt;
 use crate::tui::dialogs::flavor;
+use crate::tui::dialogs::minecraft::mc_version_select;
+use crate::tui::dialogs::update::WhatToUpdate;
+use crate::tui::dialogs::update::what_to_update;
 use crate::{common::reqwest::download::download_file, config::project_conf::ProjectConfig};
 
 const FABRIC_URL: &str = "https://meta.fabricmc.net/v2/versions";
@@ -101,8 +107,35 @@ impl Software for Fabric {
     result
   }
 
-  fn update(&mut self) -> Result<()> {
-    unimplemented!()
+  fn update(&mut self, mut pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    let fabric = ServerSoftware::FABRIC(Fabric::default());
+    match what_to_update(&fabric)? {
+      WhatToUpdate::MINECRAFT => {
+        let mc_ver = mc_version_select(&fabric)?;
+        if mc_ver < pconf.mc_version
+          && !yes_no_prompt(
+            "You are downgrading, this may corrupt your world are you sure?",
+            None,
+          ) {
+            return Ok(());
+          }
+
+        debug!(&mc_ver);
+        pconf.mc_version = mc_ver;
+        debug!(&pconf);
+      }
+      WhatToUpdate::FLAVOR(_) => {}
+    };
+
+    pconf.save(&pdir)?;
+    let pdir = if let Some(dir) = pdir {
+      dir
+    } else {
+      PathBuf::from(".")
+    };
+    self.install(pconf, <&Path>::from(&pdir))?;
+
+    Ok(())
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {

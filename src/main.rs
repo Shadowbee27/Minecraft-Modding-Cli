@@ -1,7 +1,7 @@
 use clap::*;
 use color_eyre::Result;
 
-use crate::command::{completions, init, java, new, run};
+use crate::command::{completions, init, java, new, run, update};
 
 pub mod command;
 pub mod common;
@@ -23,6 +23,8 @@ enum BaseAction {
   Run(run::RunArgs),
   /// Initialize a existing directory
   Init(init::InitArgs),
+  /// Update a server
+  Update(update::UpdateArgs),
   /// Create a new server
   New(new::CreateNewArgs),
   #[command(subcommand)]
@@ -69,6 +71,7 @@ fn main() -> Result<()> {
     BaseAction::Run(runargs) => run::run_server(runargs)?,
     BaseAction::Java(javamanagerargs) => java::java_manager(javamanagerargs)?,
     BaseAction::Complete(completionargs) => completions::completions(completionargs),
+    BaseAction::Update(update_args) => update::update(update_args)?,
   }
   Ok(())
 }

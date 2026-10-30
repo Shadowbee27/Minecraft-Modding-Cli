@@ -1,7 +1,10 @@
 use crate::{
   common::java_manager::JavaVersion,
   software::McVersion,
-  tui::common::simple_prompt::{single_choice, single_choice_fallback},
+  tui::{
+    common::simple_prompt::{single_choice, single_choice_fallback},
+    dialogs::{EMPTY_TO_CANCEL, ESC_TO_CANCEL},
+  },
 };
 use color_eyre::Result;
 use colorful::{Color, Colorful};
@@ -61,7 +64,7 @@ pub fn select_java_version_for_mc_version(
     match single_choice(
       question,
       "Which Java install do you want to use?",
-      "Esc to cancel",
+      ESC_TO_CANCEL,
     ) {
       Ok(ans) => match ans {
         JavaSelect::Java(j) => return color_eyre::eyre::Ok(j.clone()),
@@ -104,7 +107,7 @@ pub fn select_java_version_for_mc_version(
   single_choice_fallback(
     javas,
     "Which Java install do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }
 
@@ -112,7 +115,7 @@ pub fn select_java_version() -> Result<JavaVersion> {
   match single_choice(
     JavaVersion::iter().map(|j| j.print()).collect(),
     "Which Java version do you want to install?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => return JavaVersion::form_string(&ans),
     Err(e) => match e {
@@ -145,7 +148,7 @@ pub fn select_java_version() -> Result<JavaVersion> {
   single_choice_fallback(
     JavaVersion::iter().collect(),
     "Which Java version do you want to install?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }
 
@@ -153,7 +156,7 @@ pub fn select_java(javas: Vec<JavaVersion>) -> Result<JavaVersion> {
   match single_choice(
     javas.clone(),
     "Which Java install do you want to use?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => return Ok(ans),
     Err(e) => match e {
@@ -186,6 +189,6 @@ pub fn select_java(javas: Vec<JavaVersion>) -> Result<JavaVersion> {
   single_choice_fallback(
     javas,
     "Which Java install do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }

@@ -1,6 +1,10 @@
 use color_eyre::{Result, eyre::eyre};
+use colorful::{Color, Colorful};
 use inquire::{InquireError, Select};
-use std::io;
+use std::{fmt, io, process::exit};
+use strum::{EnumIter, IntoEnumIterator};
+
+use crate::tui::dialogs::ESC_TO_CANCEL;
 
 pub fn single_choice<T: std::fmt::Display>(
   list: Vec<T>,
@@ -40,4 +44,58 @@ pub fn single_choice_fallback<T: std::fmt::Display + Clone>(
     }
     eprintln!("Unknown option");
   }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter)]
+enum YesNO {
+  Yes,
+  No,
+}
+
+impl fmt::Display for YesNO {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      YesNO::Yes => write!(f, "Yes"),
+      YesNO::No => write!(f, "No"),
+    }
+  }
+}
+
+pub fn yes_no_prompt(question: &str, help_msg: Option<&str>) -> bool {
+  match Select::new(question, YesNO::iter().collect())
+    .with_help_message(help_msg.unwrap_or(ESC_TO_CANCEL))
+    .prompt()
+  {
+    Ok(r) => match r {
+      YesNO::Yes => return true,
+      YesNO::No => return false,
+    },
+    Err(e) => match e {
+      InquireError::NotTTY => {
+        eprintln!(
+          "Terminal is not functional for TUI : ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::Custom(e) => {
+        eprintln!(
+          "Unknown Error: ({})",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::IO(e) => {
+        eprintln!(
+          "IO Error: ({}). Using Fallback",
+          e.to_string().color(Color::Red).bold()
+        );
+      }
+      InquireError::InvalidConfiguration(_) => unreachable!(),
+      InquireError::OperationCanceled | InquireError::OperationInterrupted => {
+        eprintln!("Operation canceled by user");
+        exit(1)
+      }
+    },
+  }
+
+  false
 }

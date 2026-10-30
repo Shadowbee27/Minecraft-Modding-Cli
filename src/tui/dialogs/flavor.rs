@@ -3,7 +3,10 @@ use colorful::{Color, Colorful};
 use inquire::InquireError;
 use std::{fmt, process::exit};
 
-use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
+use crate::tui::{
+  common::simple_prompt::{single_choice, single_choice_fallback},
+  dialogs::{EMPTY_TO_CANCEL, ESC_TO_CANCEL},
+};
 
 // General version Question
 pub fn select_flavor_version<T>(versions: Vec<T>) -> Result<T>
@@ -13,7 +16,7 @@ where
   match single_choice(
     versions.clone(),
     "Which Server software version do you want to use?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => {
       return Ok(ans);
@@ -47,7 +50,7 @@ where
   single_choice_fallback(
     versions,
     "Which Server software version do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }
 
@@ -57,7 +60,7 @@ pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> Result<
   match single_choice(
     installer_versions.clone(),
     "Which Fabric Installer do you want to use?",
-    "Esc to cancel",
+    ESC_TO_CANCEL,
   ) {
     Ok(ans) => {
       return color_eyre::eyre::Ok(ans);
@@ -91,6 +94,6 @@ pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> Result<
   single_choice_fallback(
     installer_versions,
     "Which Fabric Installer do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )
 }

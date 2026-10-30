@@ -6,6 +6,7 @@ use std::process::exit;
 
 use crate::software::{McVersion, ServerSoftware, SupportedVersion};
 use crate::tui::common::simple_prompt::{single_choice, single_choice_fallback};
+use crate::tui::dialogs::{EMPTY_TO_CANCEL, ESC_TO_CANCEL};
 
 #[derive(Debug, Clone)]
 enum McVersionQuestion {
@@ -55,7 +56,7 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
     match single_choice(
       question,
       "Which Minecraft version do you want to use?",
-      "Esc to cancel",
+      ESC_TO_CANCEL,
     ) {
       Ok(ans) => match ans {
         McVersionQuestion::Version(v) => return color_eyre::eyre::Ok(McVersion(v.version)),
@@ -98,6 +99,6 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
   McVersion::form_string(single_choice_fallback(
     mc_versions.par_iter().map(|v| v.version.clone()).collect(),
     "Which Minecraft version do you want to use?",
-    "Leave empty to cancel",
+    EMPTY_TO_CANCEL,
   )?)
 }

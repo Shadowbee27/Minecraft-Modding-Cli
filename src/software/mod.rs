@@ -6,7 +6,7 @@ use date::Date;
 use serde::{Deserialize, Serialize};
 use std::{
   fmt::{self, Display},
-  path::Path,
+  path::{Path, PathBuf},
   str::FromStr,
 };
 use strum::EnumIter;
@@ -87,8 +87,30 @@ impl std::fmt::Display for SupportedVersion {
   }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct McVersion(pub String);
+
+impl PartialEq for McVersion {
+  fn eq(&self, other: &Self) -> bool {
+    McVersion::get_date(&self.0).unwrap() == McVersion::get_date(&other.0).unwrap()
+  }
+}
+
+impl Eq for McVersion {}
+
+impl PartialOrd for McVersion {
+  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
+impl Ord for McVersion {
+  fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    McVersion::get_date(&self.0)
+      .unwrap()
+      .cmp(&McVersion::get_date(&other.0).unwrap())
+  }
+}
 
 impl McVersion {
   pub fn get_default_java(mc_version: &McVersion) -> Result<JavaVersion> {
@@ -118,7 +140,7 @@ impl McVersion {
 
   pub fn get_date<T>(mc_version: &T) -> Result<Date>
   where
-    std::string::String: PartialEq<T>,
+    str: PartialEq<T>,
   {
     let meta = get_vanilla_metadata()?;
 
@@ -126,7 +148,7 @@ impl McVersion {
 
     for v in meta.versions {
       debug!(&v);
-      if &v.id == mc_version {
+      if v.id.as_str() == mc_version {
         let date_time = v
           .release_time
           .split_once("T")
@@ -152,7 +174,7 @@ pub trait Software {
   fn name(&self) -> &'static str {
     Self::NAME
   }
-  fn update(&mut self) -> Result<()>;
+  fn update(&mut self, pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()>;
   fn install(&mut self, pconf: ProjectConfig, pdir: &Path) -> Result<()>;
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>>
   where
@@ -166,6 +188,22 @@ pub trait Software {
 }
 
 impl ServerSoftware {
+  pub fn update(self, pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    match self {
+      ServerSoftware::BUKKIT(mut bukkit) => bukkit.update(pconf, pdir),
+      ServerSoftware::FABRIC(mut fabric) => fabric.update(pconf, pdir),
+      ServerSoftware::FOLIA(mut folia) => folia.update(pconf, pdir),
+      ServerSoftware::FORGE(mut forge) => forge.update(pconf, pdir),
+      ServerSoftware::LegacyFabric(mut legacy_fabric) => legacy_fabric.update(pconf, pdir),
+      ServerSoftware::NEOFORGE(mut neo_forge) => neo_forge.update(pconf, pdir),
+      ServerSoftware::PAPER(mut paper) => paper.update(pconf, pdir),
+      ServerSoftware::PURPUR(mut purpur) => purpur.update(pconf, pdir),
+      ServerSoftware::QUILT(mut quilt) => quilt.update(pconf, pdir),
+      ServerSoftware::SPIGGOT(mut spiggot) => spiggot.update(pconf, pdir),
+      ServerSoftware::VANILLA(mut vanilla) => vanilla.update(pconf, pdir),
+      ServerSoftware::BABRIC(mut babric) => babric.update(pconf, pdir),
+    }
+  }
   pub fn get_supported_minecraft_versions(&self) -> Result<Vec<SupportedVersion>> {
     match self {
       Self::FABRIC(_) => Fabric::get_supported_minecraft_versions(),
@@ -183,7 +221,7 @@ impl ServerSoftware {
     }
   }
 
-  pub fn as_str<T: Software>() -> &'static str {
+  pub const fn as_str<T: Software>() -> &'static str {
     T::NAME
   }
 

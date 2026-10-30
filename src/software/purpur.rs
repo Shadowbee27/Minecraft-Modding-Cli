@@ -9,7 +9,11 @@ use tokio::runtime::Runtime;
 use super::{Software, SupportedVersion};
 use crate::common::reqwest::download::download_file;
 use crate::config::project_conf::ProjectConfig;
+use crate::software::ServerSoftware;
+use crate::tui::common::simple_prompt::yes_no_prompt;
 use crate::tui::dialogs::flavor::select_flavor_version;
+use crate::tui::dialogs::minecraft::mc_version_select;
+use crate::tui::dialogs::update::{WhatToUpdate, what_to_update};
 
 const PURPUR_URL: &str = "https://api.purpurmc.org/v2/purpur";
 
@@ -85,8 +89,32 @@ impl Software for Purpur {
     download_result
   }
 
-  fn update(&mut self) -> Result<()> {
-    unimplemented!()
+  fn update(&mut self, mut pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    let purpur = ServerSoftware::PURPUR(Purpur::default());
+    match what_to_update(&purpur)? {
+      WhatToUpdate::MINECRAFT => {
+        let mc_ver = mc_version_select(&purpur)?;
+        if mc_ver < pconf.mc_version
+          && !yes_no_prompt(
+            "You are downgrading, this may corrupt your world are you sure?",
+            None,
+          ) {
+            return Ok(());
+          }
+        pconf.mc_version = mc_ver;
+      }
+      WhatToUpdate::FLAVOR(_) => {}
+    };
+
+    pconf.save(&pdir)?;
+
+    let pdir = if let Some(dir) = pdir {
+      dir
+    } else {
+      PathBuf::from(".")
+    };
+    self.install(pconf, <&Path>::from(&pdir))?;
+    Ok(())
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {

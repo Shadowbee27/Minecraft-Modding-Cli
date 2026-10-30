@@ -9,7 +9,11 @@ use super::Software;
 use super::SupportedVersion;
 use crate::config::global_conf::get_buildtools_build_dir;
 use crate::config::project_conf::ProjectConfig;
+use crate::software::ServerSoftware;
 use crate::software::buildtools::{download_build_tools_jar, get_mc_versions};
+use crate::tui::common::simple_prompt::yes_no_prompt;
+use crate::tui::dialogs::minecraft::mc_version_select;
+use crate::tui::dialogs::update::{WhatToUpdate, what_to_update};
 
 // const _SPIGGOT_URL: &str = "hub.spigotmc.org";
 
@@ -57,8 +61,33 @@ impl Software for Spiggot {
     Ok(())
   }
 
-  fn update(&mut self) -> Result<()> {
-    unimplemented!()
+  fn update(&mut self, mut pconf: ProjectConfig, pdir: Option<PathBuf>) -> Result<()> {
+    let spiggot = ServerSoftware::SPIGGOT(Spiggot::default());
+    match what_to_update(&spiggot)? {
+      WhatToUpdate::MINECRAFT => {
+        let mc_ver = mc_version_select(&spiggot)?;
+        if mc_ver < pconf.mc_version
+          && !yes_no_prompt(
+            "You are downgrading, this may corrupt your world are you sure?",
+            None,
+          ) {
+            return Ok(());
+          }
+        pconf.mc_version = mc_ver;
+      }
+      WhatToUpdate::FLAVOR(_) => {}
+    };
+
+    pconf.save(&pdir)?;
+
+    let pdir = if let Some(dir) = pdir {
+      dir
+    } else {
+      PathBuf::from(".")
+    };
+    self.install(pconf, <&Path>::from(&pdir))?;
+
+    Ok(())
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
