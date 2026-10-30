@@ -95,9 +95,9 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
     }
   }
 
-  color_eyre::eyre::Ok(McVersion::form_string(single_choice_fallback(
+  McVersion::form_string(single_choice_fallback(
     mc_versions.par_iter().map(|v| v.version.clone()).collect(),
     "Which Minecraft version do you want to use?",
     "Leave empty to cancel",
-  )?)?)
+  )?)
 }

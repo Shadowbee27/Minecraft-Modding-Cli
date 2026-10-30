@@ -88,9 +88,9 @@ pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> Result<
       }
     },
   }
-  color_eyre::eyre::Ok(single_choice_fallback(
+  single_choice_fallback(
     installer_versions,
     "Which Fabric Installer do you want to use?",
     "Leave empty to cancel",
-  )?)
+  )
 }
