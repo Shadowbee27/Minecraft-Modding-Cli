@@ -85,8 +85,7 @@ mod tests {
   }
 
   #[test]
-  fn get_spiggot_bukkit_meta() -> Result<()> {
-    color_eyre::install()?;
+  fn get_spiggot_bukkit_meta() {
     let rt = Runtime::new().unwrap();
 
     rt.block_on(get_versions(
@@ -94,7 +93,5 @@ mod tests {
       "https://hub.spigotmc.org/nexus/repository/public",
     ))
     .unwrap();
-
-    Ok(())
   }
 }
