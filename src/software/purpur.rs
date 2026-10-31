@@ -117,7 +117,10 @@ impl Software for Purpur {
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
-    Ok(get_purpur_mc_versions()?.to_supported_version())
+    let c = BClient::new();
+    let info = c.get(PURPUR_URL).send()?.json::<PurpurMCInfo>()?;
+
+    Ok(info.to_supported_version())
   }
 
   fn get_self_versions(&mut self, mc_version: &super::McVersion) -> Result<()>
@@ -131,13 +134,7 @@ impl Software for Purpur {
   }
 }
 
-fn get_purpur_mc_versions() -> color_eyre::Result<PurpurMCInfo> {
-  let c = BClient::new();
-  let info = c.get(PURPUR_URL).send()?.json::<PurpurMCInfo>()?;
-  Ok(info)
-}
-
-fn get_purpur_versions(mc_version: &str) -> color_eyre::Result<PurpurVersionInfo> {
+fn get_purpur_versions(mc_version: &str) -> Result<PurpurVersionInfo> {
   let c = BClient::new();
 
   let info = c
@@ -150,15 +147,14 @@ fn get_purpur_versions(mc_version: &str) -> color_eyre::Result<PurpurVersionInfo
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::debug;
 
   #[test]
   fn purpur_mc_version_meta() {
-    let _ = debug!(get_purpur_mc_versions()).unwrap();
+    dbg!(Purpur::get_supported_minecraft_versions()).unwrap();
   }
 
   #[test]
   fn purpur_version_meta() {
-    debug!(get_purpur_versions("26.2")).unwrap();
+    dbg!(get_purpur_versions("26.2")).unwrap();
   }
 }

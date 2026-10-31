@@ -133,7 +133,7 @@ impl Software for LegacyFabric {
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
-    let info = match get_fabric_info() {
+    let info = match get_legacy_fabric_info() {
       Ok(meta) => meta,
       Err(e) => {
         eprintln!(
@@ -157,7 +157,7 @@ impl Software for LegacyFabric {
   where
     Self: Sized + Clone,
   {
-    let info = match get_fabric_info() {
+    let info = match get_legacy_fabric_info() {
       Ok(meta) => meta,
       Err(e) => {
         eprintln!(
@@ -188,7 +188,7 @@ impl Software for LegacyFabric {
   }
 }
 
-fn get_fabric_info() -> color_eyre::Result<LegacyFabricInfo> {
+fn get_legacy_fabric_info() -> Result<LegacyFabricInfo> {
   let client = BClient::new();
 
   let response = client
@@ -206,7 +206,12 @@ mod tests {
 
   #[test]
   fn fabric_info_test() {
-    let result = get_fabric_info();
+    let result = get_legacy_fabric_info();
     debug!(result).unwrap();
+  }
+
+  #[test]
+  fn legacy_fabric_mc_versions() {
+    dbg!(LegacyFabric::get_supported_minecraft_versions().unwrap());
   }
 }

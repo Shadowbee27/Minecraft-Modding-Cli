@@ -121,7 +121,7 @@ impl Software for Folia {
   }
 }
 
-fn get_folia_metadata() -> color_eyre::Result<FoliaMCVersions> {
+fn get_folia_metadata() -> Result<FoliaMCVersions> {
   let client = BClient::new();
   let info = client.get(FOLIA_URL).send()?.json::<FoliaMCVersions>()?;
   Ok(info)
@@ -146,10 +146,7 @@ struct FoliaBuildDownloadMeta {
   url: String,
 }
 
-fn get_build_url<T: fmt::Display, G: fmt::Display>(
-  build: T,
-  mc_version: G,
-) -> color_eyre::Result<String> {
+fn get_build_url<T: fmt::Display, G: fmt::Display>(build: T, mc_version: G) -> Result<String> {
   let client = BClient::new();
   let info = client
     .get(format!(
@@ -168,7 +165,7 @@ pub struct Build {
 
 pub type BuildList = Vec<Build>;
 
-fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
+fn get_builds(mc_version: &str) -> Result<Vec<String>> {
   let client = BClient::new();
   let info = client
     .get(format!("{}/versions/{}/builds", FOLIA_URL, mc_version))

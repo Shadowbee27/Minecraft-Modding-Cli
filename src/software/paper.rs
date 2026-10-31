@@ -112,7 +112,13 @@ impl Software for Paper {
   where
     Self: Sized + Clone,
   {
-    let builds = get_builds(&mc_version.0)?;
+    let mc_version: &str = &mc_version.0;
+    let client = BClient::new();
+    let info = client
+      .get(format!("{}/versions/{}/builds", PAPER_URL, mc_version))
+      .send()?
+      .json::<BuildList>()?;
+    let builds = info.par_iter().map(|b| b.id.to_string()).collect();
 
     self.flavor_version = select_flavor_version(builds)?.parse::<i32>()?;
 
@@ -120,7 +126,7 @@ impl Software for Paper {
   }
 }
 
-fn get_paper_metadata() -> color_eyre::Result<PaperMCVersions> {
+fn get_paper_metadata() -> Result<PaperMCVersions> {
   let client = BClient::new();
   let info = client.get(PAPER_URL).send()?.json::<PaperMCVersions>()?;
   Ok(info)
@@ -166,15 +172,6 @@ pub struct Build {
 }
 
 pub type BuildList = Vec<Build>;
-
-fn get_builds(mc_version: &str) -> color_eyre::Result<Vec<String>> {
-  let client = BClient::new();
-  let info = client
-    .get(format!("{}/versions/{}/builds", PAPER_URL, mc_version))
-    .send()?
-    .json::<BuildList>()?;
-  Ok(info.par_iter().map(|b| b.id.to_string()).collect())
-}
 
 #[cfg(test)]
 mod tests {

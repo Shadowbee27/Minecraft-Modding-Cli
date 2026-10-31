@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use colorful::{Color, Colorful};
+use color_eyre::eyre::Context;
 use rayon::prelude::*;
 use reqwest::Client as AClient;
 use reqwest::blocking::Client as BClient;
@@ -7,7 +7,6 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::exit;
 use tokio::runtime::Runtime;
 
 use super::ServerSoftware;
@@ -148,16 +147,7 @@ impl Software for Babric {
   where
     Self: Sized + Clone,
   {
-    let info = match get_babric_info() {
-      Ok(meta) => meta,
-      Err(e) => {
-        eprintln!(
-          "Error getting Metadata: {}",
-          e.to_string().color(Color::Red).bold()
-        );
-        exit(1)
-      }
-    };
+    let info = get_babric_info().wrap_err_with(|| "Error getting Metadata: {}")?;
 
     self.flavor_version = Version::parse(flavor::select_flavor_version(
       info
@@ -179,7 +169,7 @@ impl Software for Babric {
   }
 }
 
-fn get_babric_info() -> color_eyre::Result<BabricInfo> {
+fn get_babric_info() -> Result<BabricInfo> {
   let client = BClient::new();
 
   let response = client.get(BABRIC_URL).send()?.json::<BabricInfo>()?;
@@ -190,11 +180,14 @@ fn get_babric_info() -> color_eyre::Result<BabricInfo> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::debug;
 
   #[test]
-  fn babric_info_test() {
-    let result = get_babric_info();
-    debug!(result).unwrap();
+  fn get_babric_info_test() {
+    dbg!(get_babric_info().unwrap());
+  }
+
+  #[test]
+  fn get_forge_mc_versions() {
+    dbg!(Babric::get_supported_minecraft_versions().unwrap());
   }
 }

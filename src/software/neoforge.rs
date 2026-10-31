@@ -197,3 +197,18 @@ fn get_neo_version_for_mc_version(mc_version: &McVersion) -> Result<Vec<String>>
 
   Ok(neo_versions)
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn neoforged_mc_version() {
+    dbg!(NeoForge::get_supported_minecraft_versions().unwrap());
+  }
+
+  #[test]
+  fn neoforged_version() {
+    dbg!(get_neo_version_for_mc_version(&McVersion("26.1.2".into())).unwrap());
+  }
+}

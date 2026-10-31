@@ -59,7 +59,7 @@ pub fn mc_version_select(software: &ServerSoftware) -> Result<McVersion> {
       ESC_TO_CANCEL,
     ) {
       Ok(ans) => match ans {
-        McVersionQuestion::Version(v) => return color_eyre::eyre::Ok(McVersion(v.version)),
+        McVersionQuestion::Version(v) => return Ok(McVersion(v.version)),
         McVersionQuestion::ShowUnstable(_) => {
           show_unstable = !show_unstable;
           question = McVersionQuestion::from_supported_version(mc_versions.clone(), show_unstable);

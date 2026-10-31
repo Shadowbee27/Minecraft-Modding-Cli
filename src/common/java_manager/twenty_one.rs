@@ -1,3 +1,4 @@
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -12,7 +13,7 @@ pub struct Java21 {
 }
 
 impl Java for Java21 {
-  fn install(self) -> color_eyre::eyre::Result<()> {
+  fn install(self) -> Result<()> {
     unimplemented!()
   }
 

@@ -3,6 +3,7 @@
 //
 
 use crate::debug;
+use color_eyre::Result;
 use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
@@ -20,7 +21,7 @@ pub async fn download_file<
   client: &Client,
   url: T,
   path: G,
-) -> color_eyre::Result<()> {
+) -> Result<()> {
   debug!(url);
 
   // Reqwest setup

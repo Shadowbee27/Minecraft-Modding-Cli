@@ -63,7 +63,7 @@ pub fn select_fabric_installer_version(installer_versions: Vec<&str>) -> Result<
     ESC_TO_CANCEL,
   ) {
     Ok(ans) => {
-      return color_eyre::eyre::Ok(ans);
+      return Ok(ans);
     }
     Err(e) => match e {
       InquireError::NotTTY => {

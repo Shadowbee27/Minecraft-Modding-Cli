@@ -93,3 +93,13 @@ impl Software for Spiggot {
     get_mc_versions()
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn spiggot_mc_versions() {
+    dbg!(Spiggot::get_supported_minecraft_versions().unwrap());
+  }
+}

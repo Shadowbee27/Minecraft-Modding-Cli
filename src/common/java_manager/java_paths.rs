@@ -3,7 +3,6 @@
  */
 
 use color_eyre::Result;
-//use color_eyre::eyre::Ok;
 use std::env;
 use std::fs::exists;
 use std::path::{Path, PathBuf};

@@ -184,7 +184,7 @@ impl Software for Fabric {
   }
 }
 
-fn get_fabric_info() -> color_eyre::Result<FabricInfo> {
+fn get_fabric_info() -> Result<FabricInfo> {
   let client = BClient::new();
 
   let response = client.get(FABRIC_URL).send()?.json::<FabricInfo>()?;
@@ -195,11 +195,14 @@ fn get_fabric_info() -> color_eyre::Result<FabricInfo> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::debug;
 
   #[test]
   fn fabric_info_test() {
-    let result = get_fabric_info();
-    debug!(result).unwrap();
+    dbg!(get_fabric_info().unwrap());
+  }
+
+  #[test]
+  fn get_fabric_mc_versions() {
+    dbg!(Fabric::get_supported_minecraft_versions().unwrap());
   }
 }

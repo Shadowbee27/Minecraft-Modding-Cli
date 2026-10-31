@@ -96,3 +96,13 @@ impl Software for Bukkit {
     get_mc_versions()
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn get_bukkit_mc_versions() {
+    dbg!(Bukkit::get_supported_minecraft_versions().unwrap());
+  }
+}

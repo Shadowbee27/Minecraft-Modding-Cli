@@ -67,7 +67,7 @@ pub fn select_java_version_for_mc_version(
       ESC_TO_CANCEL,
     ) {
       Ok(ans) => match ans {
-        JavaSelect::Java(j) => return color_eyre::eyre::Ok(j.clone()),
+        JavaSelect::Java(j) => return Ok(j.clone()),
         JavaSelect::ShowUnstable(_) => {
           show_unstable = !show_unstable;
           question = JavaSelect::from_java_version(&javas, show_unstable, mc_version);

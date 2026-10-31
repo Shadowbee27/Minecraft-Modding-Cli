@@ -133,7 +133,14 @@ impl Software for Vanilla {
   }
 
   fn get_supported_minecraft_versions() -> Result<Vec<SupportedVersion>> {
-    Ok(get_vanilla_metadata()?.to_supported_version())
+    let client = BClient::new();
+    Ok(
+      client
+        .get(VANILLA_URL)
+        .send()?
+        .json::<VanillaMetadata>()?
+        .to_supported_version(),
+    )
   }
 
   fn get_self_versions(&mut self, _mc_version: &super::McVersion) -> Result<()>
@@ -145,14 +152,12 @@ impl Software for Vanilla {
   }
 }
 
-pub fn get_vanilla_metadata() -> color_eyre::Result<VanillaMetadata> {
+pub fn get_vanilla_metadata() -> Result<VanillaMetadata> {
   let client = BClient::new();
   Ok(client.get(VANILLA_URL).send()?.json::<VanillaMetadata>()?)
 }
 
-fn get_vanilla_version_metadata(
-  metadata_url: &String,
-) -> color_eyre::Result<VanillaVersionMetadata> {
+fn get_vanilla_version_metadata(metadata_url: &String) -> Result<VanillaVersionMetadata> {
   let client = BClient::new();
   Ok(
     client
@@ -172,7 +177,7 @@ mod tests {
 
   #[test]
   fn vanilla_metadata() {
-    debug!(get_vanilla_metadata()).unwrap();
+    dbg!(Vanilla::get_supported_minecraft_versions().unwrap());
   }
 
   #[test]

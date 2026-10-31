@@ -166,3 +166,18 @@ fn get_forge_versions_for_mc_version(mc_version: &McVersion) -> Result<Vec<Strin
 
   Ok(mc_forge_version)
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn get_forge_mc_versions() {
+    dbg!(Forge::get_supported_minecraft_versions().unwrap());
+  }
+
+  #[test]
+  fn get_forge_versions() {
+    dbg!(get_forge_versions_for_mc_version(&McVersion("26.1.2".into())).unwrap());
+  }
+}

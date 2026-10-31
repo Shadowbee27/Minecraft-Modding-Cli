@@ -158,7 +158,22 @@ impl Software for Quilt {
   }
 }
 
-fn get_quilt_meta() -> color_eyre::Result<QuiltMeta> {
+fn get_quilt_meta() -> Result<QuiltMeta> {
   let client = Client::new();
   Ok(client.get(QUILT_URL).send()?.json::<QuiltMeta>()?)
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn quilt_meta() {
+    dbg!(get_quilt_meta().unwrap());
+  }
+
+  #[test]
+  fn quilt_mc_versions() {
+    dbg!(Quilt::get_supported_minecraft_versions().unwrap());
+  }
 }
