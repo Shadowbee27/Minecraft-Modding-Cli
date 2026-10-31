@@ -5,7 +5,7 @@ license = "AGPL-3.0-only"
 repository = "https://codeberg.org/shadowbee/Minecraft-Mod-Cli"
 description = "A clitool to manage minecraft mods for servers"
 readme = "README.md"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
 
 [dependencies]
