@@ -36,7 +36,7 @@ jobs:
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
 
       - name: Test
-        run: cargo test --locked --target ${{ matrix.target }}
+        run: cargo test --release --locked --target ${{ matrix.target }}
 
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }}
