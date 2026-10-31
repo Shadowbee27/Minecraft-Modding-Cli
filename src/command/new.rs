@@ -29,8 +29,13 @@ struct ServerDir<'a> {
 
 pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
   args.dir = get_current_full_dir()?.join(args.dir); // use full instedt of relitiv path
-  if fs::read_dir(&args.dir)?.next().is_some() {
-    return Err(eyre!("Directory is not empty, please use init"));
+  match fs::read_dir(&args.dir) {
+    Ok(mut r) => {
+      if r.next().is_some() {
+        return Err(eyre!("Directory is not empty, please use init"));
+      }
+    }
+    Err(_) => {}
   }
 
   let mut server_software: ServerSoftware = server_software_selector()?;
@@ -67,7 +72,7 @@ pub fn create_new_server(mut args: CreateNewArgs) -> Result<()> {
     create_dir_all(dir.dir).wrap_err_with(|| dir.creation_error.to_string())?;
   }
 
-  let project_config = ProjectConfig {
+  let mut project_config = ProjectConfig {
     server_name: args
       .dir
       .iter()

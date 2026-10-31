@@ -38,10 +38,10 @@ pub struct ProjectConfig {
 }
 
 impl ProjectConfig {
-  pub fn save(&self, project_dir: &Option<PathBuf>) -> Result<()> {
+  pub fn save(&mut self, project_dir: &Option<PathBuf>) -> Result<()> {
     let serialized = toml::to_string(&self)?;
     if !self.jar_file.is_empty() {
-      self.jar_file.canonicalize().unwrap();
+      self.jar_file = self.jar_file.canonicalize().unwrap();
     }
 
     let conf_path = if let Some(prefix) = project_dir {

@@ -87,7 +87,7 @@ pub fn init_dir(args: InitArgs) -> Result<()> {
 
   // create project config
 
-  let pconf = ProjectConfig {
+  let mut pconf = ProjectConfig {
     server_name: dir
       .iter()
       .next_back()
