@@ -138,7 +138,7 @@ pub struct ConsoleInput {
 
 #[derive(Debug)]
 pub struct RunApp {
-  rows: Vec<String>,
+  rows: Vec<(String, LogType)>,
   rows_done: usize,
   rows_width: usize,
   input: ConsoleInput,
@@ -151,6 +151,13 @@ pub struct RunApp {
   server_info: ServerDetails,
   exit: bool,
   state: RunState,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+enum LogType {
+  INFO,
+  WARN,
+  ERROR,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -339,16 +346,16 @@ impl RunApp {
     let stderr = child.stderr.take().unwrap();
     self.server_stdin = Some(child.stdin.take().unwrap());
 
-    Self::read_logs(stdout, "stdout", sender.clone());
-    Self::read_logs(stderr, "stderr", sender.clone());
+    Self::read_logs(stdout, sender.clone());
+    Self::read_logs(stderr, sender.clone());
   }
 
-  fn read_logs<R: Read + Send + 'static>(stream: R, name: &'static str, tx: Sender<String>) {
+  fn read_logs<R: Read + Send + 'static>(stream: R, tx: Sender<String>) {
     thread::spawn(move || {
       for line in BufReader::new(stream).lines() {
         match line {
           Ok(line) => {
-            let _ = tx.send(format!("[{name}] {line}"));
+            let _ = tx.send(format!("{line}"));
           }
           Err(_) => break,
         }
@@ -425,9 +432,19 @@ impl RunApp {
       self.rows_done = 0;
       self.rows_width = width;
     }
-    self
-      .rows
-      .extend(Self::wrap_rows(&logs[self.rows_done..], width));
+    self.rows.extend(
+      Self::wrap_rows(&logs[self.rows_done..], width)
+        .into_iter()
+        .map(|row| {
+          if row.contains("ERROR") {
+            (row, LogType::ERROR)
+          } else if row.contains("WARN") {
+            (row, LogType::WARN)
+          } else {
+            (row, LogType::INFO)
+          }
+        }),
+    );
     self.rows_done = logs.len();
   }
 
@@ -504,7 +521,17 @@ impl Widget for &RunApp {
     let logs = Text::from(
       self.rows[start..end]
         .iter()
-        .map(|r| Line::from(r.as_str()))
+        .map(|r| {
+          let mut line = Line::from(r.0.as_str());
+
+          match r.1 {
+            LogType::INFO => line = line.white(),
+            LogType::WARN => line = line.yellow(),
+            LogType::ERROR => line = line.red(),
+          }
+
+          line
+        })
         .collect::<Vec<Line>>(),
     );
 
