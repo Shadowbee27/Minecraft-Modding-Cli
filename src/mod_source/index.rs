@@ -1,6 +1,6 @@
 use color_eyre::Result;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use sha1::{Digest, Sha1};
+use sha2::{Digest, Sha512};
 use std::{
   fs::{DirEntry, File, read_dir},
   io::{BufReader, Read},
@@ -63,8 +63,9 @@ fn get_sha256<T: std::marker::Send + std::convert::AsRef<std::path::Path>>(
   let file = File::open(path)?;
   let mut reader = BufReader::new(file);
 
-  let mut hasher = Sha1::new();
-  let mut buffer = [0u8; 8192];
+  let mut buffer = [0u8];
+
+  let mut hasher = Sha512::new();
 
   loop {
     let bytes_read = reader.read(&mut buffer)?;
@@ -88,7 +89,7 @@ mod tests {
   fn test_hash() {
     assert_eq!(
       get_sha256("./LICENSE").unwrap(),
-      "51fbad96d4ea2d0c5302e0f276e46f973b06eea0"
+      "2a2ed9c46fe8a905f4698e463c69dadfff277a54cd6befa0d485b47754d5910f2d6f305495df331513c9fe83ced67ce3f72c6563612c30fae46f5f9b4f8efb57"
     );
   }
 }

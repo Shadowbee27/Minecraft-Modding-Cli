@@ -40,7 +40,10 @@ pub enum DepsType {
 }
 
 pub fn get_version_from_hash<T: fmt::Display>(hash: T, mod_meta: &mut ModMeta) -> Result<()> {
-  let url = format!("{}{}{}", MODRINTH_API_URL, API_EXT, hash);
+  let url = format!(
+    "{}{}{}{}",
+    MODRINTH_API_URL, API_EXT, hash, "?algorithm=sha512"
+  );
   let resp = Client::new().get(url).send()?;
 
   if resp.status() == StatusCode::OK {

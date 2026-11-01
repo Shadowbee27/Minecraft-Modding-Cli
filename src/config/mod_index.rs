@@ -39,7 +39,7 @@ pub enum ModSource {
 
 impl ModsIndex {
   pub fn new(folder: PathBuf) -> Result<ModsIndex> {
-    let index = ModsIndex {
+    let mut index = ModsIndex {
       path: folder.clone(),
       ..Default::default()
     };
@@ -53,8 +53,11 @@ impl ModsIndex {
   }
 
   /// This expects the folder to exist
-  pub fn write_conf(&self) -> Result<()> {
+  pub fn write_conf(&mut self) -> Result<()> {
     let path = self.path.join(".mcmc-index/");
+    if !self.path.is_empty() {
+      self.path = self.path.canonicalize().unwrap();
+    }
     if !exists(&path)? {
       fs::create_dir_all(&path)?;
     }

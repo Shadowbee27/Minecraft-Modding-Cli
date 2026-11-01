@@ -1,13 +1,13 @@
 use color_eyre::eyre::Result;
 use reqwest::{IntoUrl, blocking::Client};
 use serde::de::DeserializeOwned;
-use sha1::{Digest, Sha1};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
 type Cache<Value> = HashMap<String, Value>;
 
 fn cache_key(url: impl AsRef<[u8]>) -> String {
-  hex::encode(Sha1::digest(url))
+  hex::encode(Sha256::digest(url))
 }
 
 pub fn get_with_cache<T: IntoUrl + AsRef<[u8]> + Clone, Value: Clone + DeserializeOwned>(
